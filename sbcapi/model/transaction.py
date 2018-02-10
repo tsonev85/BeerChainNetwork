@@ -6,14 +6,14 @@ class Transaction:
     def __init__(self,
                  to_address,
                  value,
-                 fee_percent,
                  sender_pub_key,
                  sender_signature,
                  mined_in_block_index,
                  date_added_to_block,
                  from_address=None,
                  date_created=time.time(),
-                 paid=False):
+                 paid=False,
+                 fee_percent=0.05):
         """
         Constructor
         :param from_address: <str>

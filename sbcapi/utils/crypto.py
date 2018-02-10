@@ -12,7 +12,7 @@ class CryptoUtils(object):
         :return: <str>
         """
 
-        hash_object = hashlib.sha256(str(text).encode("utf8"))
+        hash_object = hashlib.sha256(str(data).encode("utf8"))
         return hash_object.hexdigest()
 
     def ripemd160(data):
@@ -72,3 +72,7 @@ class CryptoUtils(object):
         :return: <str>
         """
         return CryptoUtils.ripemd160(public_key)
+
+    @staticmethod
+    def calc_miner_hash(block_hash, nonce):
+        return CryptoUtils.calc_sha256(str(block_hash) + str(nonce))
