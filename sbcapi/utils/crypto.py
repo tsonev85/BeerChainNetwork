@@ -17,3 +17,7 @@ class CryptoUtils(object):
     @staticmethod
     def sign_transaction(private_key, data):
         pass
+
+    @staticmethod
+    def calc_miner_hash(block_hash, nonce):
+        return CryptoUtils.calc_sha256(str(block_hash)+str(nonce))
