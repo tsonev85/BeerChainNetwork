@@ -4,19 +4,15 @@ class Block:
 
     def __init__(self,
                  index,
-                 block_hash,
-                 block_data_hash,
                  prev_block_hash,
                  date_created,
-                 transactions,
-                 difficulty,
-                 nonce,
-                 mined_by):
+                 transactions=None,
+                 difficulty=4,
+                 nonce=0,
+                 mined_by=None):
         """
         Constructor
         :param index: <int>
-        :param block_hash: <hex>
-        :param block_data_hash: <hex>
         :param prev_block_hash: <hex>
         :param date_created: <int>
         :param transactions: <dict[]> Transaction
@@ -25,8 +21,7 @@ class Block:
         :param mined_by: <str>
         """
         self.index = index
-        self.block_hash = block_hash
-        self.block_data_hash = block_data_hash
+        self.block_hash = self.calculate_block_hash()
         self.prev_block_hash = prev_block_hash
         self.date_created = date_created
         self.transactions = transactions
@@ -37,6 +32,13 @@ class Block:
     def calculate_transactions_hash(self):
         pass
 
-    def calculate_hash_for_miner(self):
+    def calculate_block_hash(self):
+        #index + prev_block_hash + date_created + hash of transactions + difficulty + mined_by
+        # return sha256
+        return 1
+
+    def is_block_valid(self):
+        # return (calculateHashForBlock(newBlock) !== newBlock.hash)
         pass
+
 
