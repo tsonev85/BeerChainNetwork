@@ -1,4 +1,4 @@
-from pycoin.ecdsa import generator_secp256k1
+from pycoin.ecdsa import generator_secp256k1, sign, verify
 import hashlib, bitcoin
 
 
@@ -15,6 +15,7 @@ class CryptoUtils(object):
         hash_object = hashlib.sha256(str(data).encode("utf8"))
         return hash_object.hexdigest()
 
+    @staticmethod
     def ripemd160(data):
         """
         Returns a hashed string of hexadecimal digits using RIPEMD-160
@@ -26,14 +27,33 @@ class CryptoUtils(object):
         return hash_bytes.hexdigest()
 
     @staticmethod
+    def keccak_hash(data):
+        hash_bytes = hashlib.sha3_256(data.encode("utf8")).digest()
+        return int.from_bytes(hash_bytes, byteorder="big")
+
+    @staticmethod
     def sign_transaction(private_key, data):
         """
-        Generates a transaction signature(hash) using private key and transaction data
+        Generates a transaction signature using private key and transaction data
         :param private_key: <str> Private Key to sign with
         :param data: object/str/hash that represent the data in the transaction
-        :return: <str>
+        :return: <tuple<int,int>>
         """
-        return CryptoUtils.calc_sha256(private_key+str(data))
+        data_hash = CryptoUtils.keccak_hash(data)
+        signature = sign(generator_secp256k1, private_key, data_hash)
+
+        return signature
+
+    @staticmethod
+    def verify_transaction(public_key, data, signature):
+        """
+        Verifies a transaction based ot its signature, data and owners public key
+        :param public_key: <tuple<int,int>> see: generate_public_key
+        :param data: object/str/hash that represent the data in the transaction
+        :param signature: <tuple<int,int>>
+        :return: <bool>
+        """
+        return verify(generator_secp256k1, public_key,CryptoUtils.keccak_hash(data), signature)
 
     @staticmethod
     def generate_private_key(password):
@@ -58,10 +78,19 @@ class CryptoUtils(object):
         """
         Generates public key based on private key
         :param private_key: <str> Private key
-        :return: <str>
+        :return: <tuple<int,int>>
         """
         pk = int(private_key, 16)
         public_key = (generator_secp256k1 * pk).pair()
+        return public_key
+
+    @staticmethod
+    def compress_public_key(public_key):
+        """
+        Compresses the public key to hex string
+        :param public_key: <tuple<int,int>>
+        :return: <str>
+        """
         return hex(public_key[0])[2:] + str(public_key[1] % 2)
 
     @staticmethod
