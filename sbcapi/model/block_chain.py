@@ -1,6 +1,7 @@
 from sbcapi.model import *
 import time
 
+
 class BlockChain:
 
     def __init__(self):
