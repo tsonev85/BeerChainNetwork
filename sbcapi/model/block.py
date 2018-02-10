@@ -1,4 +1,4 @@
-from utils import *
+from sbcapi.utils import *
 
 class Block:
 
@@ -35,7 +35,8 @@ class Block:
         self.mined_by = mined_by
 
     def calculate_transactions_hash(self):
-
+        pass
 
     def calculate_hash_for_miner(self):
         pass
+

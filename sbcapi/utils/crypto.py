@@ -1,5 +1,4 @@
 import hashlib
-import base58
 
 
 class CryptoUtils(object):
@@ -51,7 +50,3 @@ class CryptoUtils(object):
         ret = ripe_hash[:]
         ret[-4:] = checksum[:4]
         return ret
-
-    @staticmethod
-    def base_58_encode(array):
-        return base58.b58encode(bytes(array))
