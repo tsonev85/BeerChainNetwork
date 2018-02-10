@@ -8,7 +8,8 @@ class BlockChain:
         self.genesis_block = Block(
             index=0,
             prev_block_hash=0,
-            date_created=int(time.time())
+            date_created=int(time.time()),
+            mined_by="BeerPpl"
         )
         self.blocks =[]
         self.blocks.append(self.genesis_block)
