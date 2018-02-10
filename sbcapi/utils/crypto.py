@@ -14,3 +14,6 @@ class CryptoUtils(object):
         hash_object = hashlib.sha256(str(text).encode())
         return hash_object.hexdigest()
 
+    @staticmethod
+    def sign_transaction(private_key, data):
+        pass

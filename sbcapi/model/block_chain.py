@@ -26,3 +26,4 @@ class BlockChain:
     def is_new_block_valid(self, new_block, nonce):
         pass
 
+
