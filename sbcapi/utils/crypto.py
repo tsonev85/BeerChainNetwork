@@ -50,15 +50,15 @@ class CryptoUtils(object):
         return signature
 
     @staticmethod
-    def verify_transaction(public_key, data, signature):
+    def verify_transaction(public_key, hashed_data, signature):
         """
         Verifies a transaction based ot its signature, data and owners public key
         :param public_key: <tuple<int,int>> see: generate_public_key
-        :param data: object/str/hash that represent the data in the transaction
+        :param hashed_data: <int> that represent the data in the transaction
         :param signature: <tuple<int,int>>
         :return: <bool>
         """
-        return verify(generator_secp256k1, public_key,CryptoUtils.keccak_hash(data), signature)
+        return verify(generator_secp256k1, public_key, hashed_data, signature)
 
     @staticmethod
     def generate_private_key(password):
@@ -105,7 +105,7 @@ class CryptoUtils(object):
         :param public_key: <str>
         :return: <str>
         """
-        return CryptoUtils.ripemd160(public_key)
+        return CryptoUtils.ripemd160(CryptoUtils.compress_public_key(public_key))
 
     @staticmethod
     def calc_miner_hash(block_hash, nonce):

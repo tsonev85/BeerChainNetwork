@@ -9,9 +9,9 @@ class Transaction(dict):
                  value,
                  sender_pub_key,
                  sender_signature,
+                 date_created,
                  mined_in_block_index=None,
                  from_address=None,
-                 date_created=time.time(),
                  paid=False,
                  fee_percent=5):
         """
@@ -27,6 +27,8 @@ class Transaction(dict):
         :param date_created: <float>
         :param paid: <bool>
         """
+        if from_address is None:
+            from_address = CryptoUtils.generate_address(sender_pub_key)
         self.from_address = from_address
         self.to_address = to_address
         # TODO add value -= value*fee_percent
@@ -34,10 +36,11 @@ class Transaction(dict):
         self.fee_percent = fee_percent
         self.sender_pub_key = sender_pub_key
         self.sender_signature = sender_signature
-        self.date_received = date_created
+        self.date_received = time.time()
         self.mined_in_block_index = mined_in_block_index
         self.paid = paid
         self.date_added_to_block = None
+        self.date_created = date_created
         self.transaction_hash = self.calculate_transaction_hash()
         # Added to be json serializable
         dict.__init__(self,
@@ -51,7 +54,8 @@ class Transaction(dict):
                       mined_in_block_index=self.mined_in_block_index,
                       paid=self.paid,
                       date_added_to_block=self.date_added_to_block,
-                      transaction_hash=self.transaction_hash)
+                      transaction_hash=self.transaction_hash,
+                      date_created=self.date_created)
 
     def calculate_transaction_hash(self):
         """
@@ -62,9 +66,8 @@ class Transaction(dict):
                + str(self.to_address) \
                + str(self.value) \
                + str(self.sender_pub_key) \
-               + str(self.sender_signature) \
-               + str(self.date_received)
-        return CryptoUtils.calc_sha256(data)
+               + str(self.date_created)
+        return CryptoUtils.keccak_hash(data)
 
     def sign_transaction(self, private_key):
         """
@@ -82,7 +85,7 @@ class Transaction(dict):
         """
         return CryptoUtils.verify_transaction(
             public_key=self.sender_pub_key,
-            data=self.transaction_hash,
+            hashed_data=self.transaction_hash,
             signature=self.sender_signature)
 
     def has_enough_balance(self):

@@ -56,17 +56,17 @@ def add_transactions():
     transactions = values['transactions']
     failed_transactions = []
     successfully_added = []
-    required_for_transaction = ['to_address', 'value', 'sender_pub_key', 'sender_signature']
+    required_for_transaction = ['to_address', 'value', 'sender_pub_key', 'sender_signature', 'date_created']
     for transaction in transactions:
         # Check that the required fields are in the POSTed data
         if not all(k in transaction for k in required_for_transaction):
             failed_transactions.append(transaction)
             continue
-        # TODO check transaction valdiation
         transaction = Transaction(to_address=transaction['to_address'],
                                   value=int(transaction['value']),
-                                  sender_pub_key=tuple(int(x, 16) for x in transaction['sender_pub_key']),
-                                  sender_signature= tuple(int(x, 16) for x in transaction['sender_signature']))
+                                  sender_pub_key=tuple(int(x) for x in transaction['sender_pub_key']),
+                                  sender_signature= tuple(int(x) for x in transaction['sender_signature']),
+                                  date_created=float(transaction['date_created']))
         if node.add_to_pending_transactions(transaction):
             successfully_added.append(transaction)
         else:

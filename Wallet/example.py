@@ -24,7 +24,6 @@ def randomPrivateKeyToAddress():
     addr = ripemd160(public_key_compressed)
     print("blockchain address:", addr)
 
-
 def existingPrivateKeyToAddress(private_key_hex):
     print("Existing private key --> public key --> address")
     print("-----------------------------------------------")
