@@ -1,7 +1,6 @@
 from uuid import uuid4
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from sbcapi.model import *
-
 
 # Instantiate our node server
 app = Flask(__name__)
@@ -10,7 +9,7 @@ app = Flask(__name__)
 node_identifier = str(uuid4()).replace('-', '')
 
 # Instantiate the Node
-node = Node(node_identifier, peers=None)
+node = Node(node_identifier)
 
 
 @app.route('/', methods=["GET"])
@@ -21,6 +20,19 @@ def node_info():
     }
     return jsonify(response), 200
 
+@app.route('/give_me_beer', methods=['POST'])
+def get_job():
+    values = request.get_json()
+    # Check that the required fields are in the POST'ed data
+    required = ['minerAddress']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+    hash, dificulty = node.get_mining_job(values['minerAddress'])
+    response = {
+        'hash': hash,
+        'dificulty': dificulty
+    }
+    return jsonify(response), 200
 
 if __name__ == '__main__':
     from argparse import ArgumentParser

@@ -4,11 +4,10 @@ class Node:
 
     def __init__(self,
                  node_identifier,
-                 peers,
+                 peers=None,
                  balances=None,
                  block_chain=None,
-                 mining_jobs=None,
-                 new_block=None):
+                 mining_jobs=None):
         """
         Constructor
         :param peers: <str[]>
@@ -28,7 +27,7 @@ class Node:
         self.block_chain = block_chain
         self.balances = balances
         self.mining_jobs = mining_jobs
-        self.new_block = new_block
+        self.new_block = self.get_new_block()
 
     def add_peer(self, peer):
         self.peers.append(peer)
@@ -38,11 +37,7 @@ class Node:
             print("Transaction is not valid.")
             return False
         if not self.new_block:
-            self.new_block = Block(index=len(self.block_chain),
-                                   prev_block_hash=self.block_chain[len(self.block_chain)-1],
-                                   date_created=time.time(),
-                                   mined_by="",
-                                   difficulty=self.block_chain.difficulty)
+            self.new_block = self.get_new_block()
         self.new_block.transactions.append(transaction)
         return True
 
@@ -76,3 +71,10 @@ class Node:
 
     def replace_chain(self, new_chain):
         self.block_chain.replace_chain(new_chain)
+
+    def get_new_block(self):
+        return Block(index=len(self.block_chain.blocks),
+                     prev_block_hash=self.block_chain.blocks[len(self.block_chain.blocks) - 1],
+                     date_created=time.time(),
+                     mined_by="",
+                     difficulty=self.block_chain.difficulty)
