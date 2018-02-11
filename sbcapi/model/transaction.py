@@ -33,11 +33,11 @@ class Transaction:
         self.fee_percent = fee_percent
         self.sender_pub_key = sender_pub_key
         self.sender_signature = sender_signature
-        self.transaction_hash = self.calculate_transaction_hash()
         self.date_received = date_created
         self.mined_in_block_index = mined_in_block_index
         self.paid = paid
         self.date_added_to_block = date_added_to_block
+        self.transaction_hash = self.calculate_transaction_hash()
 
 
     def calculate_transaction_hash(self):
@@ -48,7 +48,7 @@ class Transaction:
         data = str(self.from_address) \
                + str(self.to_address) \
                + str(self.value) \
-               + self.sender_pub_key() \
+               + str(self.sender_pub_key) \
                + str(self.sender_signature) \
                + str(self.date_received)
         return CryptoUtils.calc_sha256(data)

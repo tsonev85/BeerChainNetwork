@@ -1,4 +1,5 @@
 from sbcapi.utils import *
+import json
 
 class Block:
 
@@ -7,8 +8,8 @@ class Block:
                  prev_block_hash,
                  date_created,
                  mined_by,
+                 difficulty,
                  transactions=None,
-                 difficulty=4,
                  nonce=0):
         """
         Constructor
@@ -31,6 +32,10 @@ class Block:
         self.mined_by = mined_by
         self.miner_hash = None
         self.block_hash = self.calculate_block_hash()
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+                          sort_keys=True, indent=4)
 
     def calculate_transactions_hash(self):
         """

@@ -4,15 +4,18 @@ import time
 
 class BlockChain:
 
-    def __init__(self):
+    def __init__(self,
+                 difficulty=4):
         self.genesis_block = Block(
             index=0,
             prev_block_hash=0,
             date_created=int(time.time()),
-            mined_by="BeerPpl"
+            mined_by="BeerPpl",
+            difficulty=difficulty
         )
         self.blocks =[]
         self.blocks.append(self.genesis_block)
+        self.difficulty = difficulty
 
     def add_to_blockchain(self, new_block):
         """
@@ -58,4 +61,6 @@ class BlockChain:
         """
         return Block.is_block_valid(new_block, previous_block)
 
+    def get_balance(self):
+        pass
 
