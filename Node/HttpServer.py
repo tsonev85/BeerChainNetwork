@@ -20,6 +20,55 @@ def node_info():
     }
     return jsonify(response), 200
 
+@app.route('/add_peers', methods=['POST'])
+def add_peers():
+    values = request.get_json()
+    # Check that the required fields are in the POST'ed data
+    required = ['peers']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+    node.peers.append(values['peers'])
+    return "Peers successfully added.", 200
+
+@app.route('/peers', methods=["GET"])
+def get_peers():
+    response = {
+        'peers': node.peers
+    }
+    return jsonify(response), 200
+
+@app.route('/add_transactions', methods=['POST'])
+def add_transactions():
+    values = request.get_json()
+    # Check that the required fields are in the POST'ed data
+    required = ['transactions']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+
+    transactions = values['transactions']
+
+
+
+    failed_transactions = []
+    successfuly_added = []
+    for transaction in transactions:
+        if not node.add_to_pending_transactions(transaction):
+            failed_transactions.append(transaction)
+        else:
+            successfuly_added.append(transaction)
+    response = {
+        'successfullyAdded': successfuly_added,
+        'failedToAdd': failed_transactions
+    }
+    return jsonify(response), 200
+
+@app.route('/pending_transactions', methods=["GET"])
+def get_pending_transactions():
+    response = {
+        'pendingTransactions': node.new_block.transactions
+    }
+    return jsonify(response), 200
+
 @app.route('/give_me_beer', methods=['POST'])
 def get_job():
     values = request.get_json()

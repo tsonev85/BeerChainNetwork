@@ -30,9 +30,17 @@ class Node:
         self.new_block = self.get_new_block()
 
     def add_peer(self, peer):
+        """
+        Adds new peer
+        :param peer: <str> new peer
+        """
+        # TODO add validation of peer format
         self.peers.append(peer)
 
-    def add_transaction(self, transaction):
+    def add_to_pending_transactions(self, transaction):
+        if not bool(transaction):
+            "Transactions is empty"
+            return False
         if not transaction.is_transaction_valid():
             print("Transaction is not valid.")
             return False
@@ -70,9 +78,19 @@ class Node:
         pass
 
     def replace_chain(self, new_chain):
-        self.block_chain.replace_chain(new_chain)
+        """
+        Replaces node block chain with new one
+        :param new_chain: <dict> BlockChain
+        :return:
+        """
+        self.block_chain.replace_chain(new_chain.blocks)
 
     def get_new_block(self):
+        """
+        Returns a new block to be mined,
+        all pending transactions will be added to this block
+        :return:
+        """
         return Block(index=len(self.block_chain.blocks),
                      prev_block_hash=self.block_chain.blocks[len(self.block_chain.blocks) - 1],
                      date_created=time.time(),

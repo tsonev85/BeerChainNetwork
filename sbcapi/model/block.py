@@ -33,10 +33,6 @@ class Block:
         self.miner_hash = None
         self.block_hash = self.calculate_block_hash()
 
-    def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__,
-                          sort_keys=True, indent=4)
-
     def calculate_transactions_hash(self):
         """
         Returns hash of block transactions.
@@ -85,6 +81,7 @@ class Block:
             print("Invalid miner hash")
             return False
         return True
+
 
 
 

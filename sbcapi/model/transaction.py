@@ -74,5 +74,6 @@ class Transaction:
 
     def has_enough_balance(self):
         self.is_transaction_valid()
+        # TODO
         # check if enough money
         pass
