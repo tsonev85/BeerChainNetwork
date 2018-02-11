@@ -62,10 +62,11 @@ def add_transactions():
         if not all(k in transaction for k in required_for_transaction):
             failed_transactions.append(transaction)
             continue
+        # TODO check transaction valdiation
         transaction = Transaction(to_address=transaction['to_address'],
                                   value=int(transaction['value']),
-                                  sender_pub_key=transaction['sender_pub_key'],
-                                  sender_signature=transaction['sender_signature'])
+                                  sender_pub_key=tuple(int(x, 16) for x in transaction['sender_pub_key']),
+                                  sender_signature= tuple(int(x, 16) for x in transaction['sender_signature']))
         if node.add_to_pending_transactions(transaction):
             successfully_added.append(transaction)
         else:

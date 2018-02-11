@@ -5,7 +5,11 @@ import time
 class BlockChain(object):
 
     def __init__(self,
-                 difficulty=4):
+                 difficulty=5):
+        """
+        Constructor
+        :param difficulty: <int>
+        """
         self.genesis_block = Block(
             index=0,
             prev_block_hash=0,

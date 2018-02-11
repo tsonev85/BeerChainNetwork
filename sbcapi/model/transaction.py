@@ -21,7 +21,7 @@ class Transaction(dict):
         :param value: <int>
         :param fee_percent: <int>
         :param sender_pub_key: <hex>
-        :param sender_signature: <hex>
+        :param sender_signature: <tuple<hex><hex>>
         :param mined_in_block_index: <int>
         :param date_added_to_block: <int>
         :param date_created: <float>

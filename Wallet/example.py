@@ -17,7 +17,7 @@ def randomPrivateKeyToAddress():
     print("private key:", private_key)
 
     public_key = (generator_secp256k1 * private_key).pair()
-    print("public key:", public_key)
+    print("public key:", hex(public_key[0]), " ", hex(public_key[1]))
     public_key_compressed = hex(public_key[0])[2:] + str(public_key[1] % 2)
     print("public key (compressed):", public_key_compressed)
 

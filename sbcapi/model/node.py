@@ -55,6 +55,10 @@ class Node(object):
         self.new_block.transactions.append(transaction)
         return True
 
+    def add_new_block(self):
+        # TODO
+        pass
+
     def remove_transaction(self):
         # TODO
         pass
