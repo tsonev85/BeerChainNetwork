@@ -1,6 +1,7 @@
 from sbcapi.model import *
 
-class Node:
+
+class Node(object):
 
     def __init__(self,
                  node_identifier,
@@ -11,10 +12,10 @@ class Node:
         """
         Constructor
         :param peers: <str[]>
-        :param block_chain: <dict> BlockChain
+        :param block_chain: <BlockChain>
         :param balances: <dict> address => number
         :param mining_jobs: <dict> address => Block
-        :param new_block: <dict> Block
+        :param new_block: <Block>
         """
         if block_chain is None:
             block_chain = BlockChain()
@@ -38,6 +39,11 @@ class Node:
         self.peers.append(peer)
 
     def add_to_pending_transactions(self, transaction):
+        """
+        Validates transaction and adds it to pending transaction of self.new_block
+        :param transaction: <Transaction> Transaction to be added to pending
+        :return: <bool> Result of action
+        """
         if not bool(transaction):
             "Transactions is empty"
             return False

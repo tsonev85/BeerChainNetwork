@@ -1,7 +1,7 @@
 from sbcapi.utils import *
-import json
 
-class Block:
+
+class Block(dict):
 
     def __init__(self,
                  index,
@@ -16,7 +16,7 @@ class Block:
         :param index: <int>
         :param prev_block_hash: <hex>
         :param date_created: <int>
-        :param transactions: <dict[]> Transaction
+        :param transactions: <Transaction[]>
         :param difficulty: <int>
         :param nonce: <int>
         :param mined_by: <str>
@@ -32,6 +32,17 @@ class Block:
         self.mined_by = mined_by
         self.miner_hash = None
         self.block_hash = self.calculate_block_hash()
+        # Added to be json serializable
+        dict.__init__(self,
+                      index=self.index,
+                      prev_block_hash=self.prev_block_hash,
+                      date_created=self.date_created,
+                      transactions=self.transactions,
+                      difficulty=self.difficulty,
+                      nonce=self.nonce,
+                      mined_by=self.mined_by,
+                      miner_hash=self.miner_hash,
+                      block_hash=self.block_hash)
 
     def calculate_transactions_hash(self):
         """
@@ -64,8 +75,8 @@ class Block:
     def is_block_valid(new_block, previous_block):
         """
         Validates if new_block has valid index, hash and miner hash
-        :param new_block: <dict> Block
-        :param previous_block: <dict> Block
+        :param new_block: <Block> New block
+        :param previous_block: <Block> Previous block
         :return: <bool>
         """
         if previous_block.index + 1 != new_block.index:

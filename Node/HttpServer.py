@@ -2,6 +2,7 @@ from uuid import uuid4
 from flask import Flask, jsonify, request
 from sbcapi.model import *
 
+
 # Instantiate our node server
 app = Flask(__name__)
 
@@ -20,10 +21,18 @@ def node_info():
     }
     return jsonify(response), 200
 
+@app.route('/chain', methods=["GET"])
+def get_block_chain():
+    response = {
+        'blocks': node.block_chain.blocks,
+        'lengthOfBlockChain': len(node.block_chain.blocks)
+    }
+    return jsonify(response), 200
+
 @app.route('/add_peers', methods=['POST'])
 def add_peers():
     values = request.get_json()
-    # Check that the required fields are in the POST'ed data
+    # Check that the required fields are in the POSTed data
     required = ['peers']
     if not all(k in values for k in required):
         return 'Missing values', 400
@@ -40,24 +49,29 @@ def get_peers():
 @app.route('/add_transactions', methods=['POST'])
 def add_transactions():
     values = request.get_json()
-    # Check that the required fields are in the POST'ed data
+    # Check that the required fields are in the POSTed data
     required = ['transactions']
     if not all(k in values for k in required):
         return 'Missing values', 400
-
     transactions = values['transactions']
-
-
-
     failed_transactions = []
-    successfuly_added = []
+    successfully_added = []
+    required_for_transaction = ['to_address', 'value', 'sender_pub_key', 'sender_signature']
     for transaction in transactions:
-        if not node.add_to_pending_transactions(transaction):
+        # Check that the required fields are in the POSTed data
+        if not all(k in transaction for k in required_for_transaction):
             failed_transactions.append(transaction)
+            continue
+        transaction = Transaction(to_address=transaction['to_address'],
+                                  value=int(transaction['value']),
+                                  sender_pub_key=transaction['sender_pub_key'],
+                                  sender_signature=transaction['sender_signature'])
+        if node.add_to_pending_transactions(transaction):
+            successfully_added.append(transaction)
         else:
-            successfuly_added.append(transaction)
+            failed_transactions.append(transaction)
     response = {
-        'successfullyAdded': successfuly_added,
+        'successfullyAdded': successfully_added,
         'failedToAdd': failed_transactions
     }
     return jsonify(response), 200
@@ -72,7 +86,7 @@ def get_pending_transactions():
 @app.route('/give_me_beer', methods=['POST'])
 def get_job():
     values = request.get_json()
-    # Check that the required fields are in the POST'ed data
+    # Check that the required fields are in the POSTed data
     required = ['minerAddress']
     if not all(k in values for k in required):
         return 'Missing values', 400
