@@ -14,18 +14,29 @@ class BlockChain:
         self.blocks =[]
         self.blocks.append(self.genesis_block)
 
-    def add_to_blockchain(self):
-        pass
+    def add_to_blockchain(self, new_block):
+        """
+        Adds new block to block chain
+        :param new_block: <dict> Block
+        """
+        if BlockChain.new_block_valid(new_block, self.blocks[new_block.index-1]):
+            self.blocks.append(new_block)
 
-    def replace_chain(self, chain):
-        pass
+    def replace_chain(self, new_block_chain):
+        """
+        Replaces blocks in this block chain with a new block chain
+        :param new_block_chain:
+        """
+        if not BlockChain.valid_chain(new_block_chain):
+            print("Can not replace chain due to invalid element in new chain.")
+        self.blocks = new_block_chain
 
     @staticmethod
-    def is_valid_chain(chain):
+    def valid_chain(chain):
         """
         Iterates trough elements of chain and checks if they are valid
         :param chain:
-        :return:
+        :return: bool
         """
         if len(chain) <= 1:
             # Only 1 or 0 elements in chain -> nothing to check
@@ -33,6 +44,7 @@ class BlockChain:
         # start from second element of chain
         for index, element in enumerate(chain[1:]):
             if not BlockChain.new_block_valid(element, chain[index]):
+                print("Element of new block chain is not valid: " + element)
                 return False
         return True
 
