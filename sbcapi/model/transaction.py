@@ -41,16 +41,38 @@ class Transaction:
 
 
     def calculate_transaction_hash(self):
-        # from + to + value + sender_pub_key + date_created
-        return 1
+        """
+        Returns hash of transaction information.
+        return:
+        """
+        data = str(self.from_address) \
+               + str(self.to_address) \
+               + str(self.value) \
+               + self.sender_pub_key() \
+               + str(self.sender_signature) \
+               + str(self.date_received)
+        return CryptoUtils.calc_sha256(data)
 
     def sign_transaction(self, private_key):
+        """
+        Sign transaction using owner's private and transaction data hash
+        :param private_key: <str> Owner's private key
+        :return: <tuple<int,int>>
+        """
         return CryptoUtils.sign_transaction(private_key, self.transaction_hash)
 
-    def is_signature_valid(self):
-        pass
-
     def is_transaction_valid(self):
-        self.is_signature_valid()
-        # check if enough moneh
+        """
+        Verifies transaction based on sender public key, transaction data hash
+        and sender signature
+        :return: <bool>
+        """
+        return CryptoUtils.verify_transaction(
+            public_key=self.sender_pub_key,
+            data=self.transaction_hash,
+            signature=self.sender_signature)
+
+    def has_enough_balance(self):
+        self.is_transaction_valid()
+        # check if enough money
         pass

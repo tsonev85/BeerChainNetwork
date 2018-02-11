@@ -22,9 +22,28 @@ class BlockChain:
 
     @staticmethod
     def is_valid_chain(chain):
-        pass
+        """
+        Iterates trough elements of chain and checks if they are valid
+        :param chain:
+        :return:
+        """
+        if len(chain) <= 1:
+            # Only 1 or 0 elements in chain -> nothing to check
+            return True
+        # start from second element of chain
+        for index, element in enumerate(chain[1:]):
+            if not BlockChain.new_block_valid(element, chain[index]):
+                return False
+        return True
 
-    def is_new_block_valid(self, new_block, nonce):
-        pass
+    @staticmethod
+    def new_block_valid(new_block, previous_block):
+        """
+        Validates if new_block has valid index, hash and miner hash
+        :param new_block: <dict> Block
+        :param previous_block: <dict> Block
+        :return: bool
+        """
+        return Block.is_block_valid(new_block, previous_block)
 
 

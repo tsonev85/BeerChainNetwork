@@ -63,8 +63,8 @@ class Block:
     def is_block_valid(new_block, previous_block):
         """
         Validates if new_block has valid index, hash and miner hash
-        :param new_block:
-        :param previous_block:
+        :param new_block: <dict> Block
+        :param previous_block: <dict> Block
         :return: <bool>
         """
         if previous_block.index + 1 != new_block.index:

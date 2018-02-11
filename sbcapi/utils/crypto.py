@@ -28,6 +28,11 @@ class CryptoUtils(object):
 
     @staticmethod
     def keccak_hash(data):
+        """
+        Returns keccak hash of data
+        :param data: <str> Data to hash
+        :return: <str>
+        """
         hash_bytes = hashlib.sha3_256(data.encode("utf8")).digest()
         return int.from_bytes(hash_bytes, byteorder="big")
 
@@ -104,4 +109,10 @@ class CryptoUtils(object):
 
     @staticmethod
     def calc_miner_hash(block_hash, nonce):
+        """
+        Calculates hash taking into account block_hash+nonce
+        :param block_hash: <str> Block hash
+        :param nonce: <str> Nonce
+        :return: <str>
+        """
         return CryptoUtils.calc_sha256(str(block_hash) + str(nonce))
