@@ -1,10 +1,12 @@
 from uuid import uuid4
 from flask import Flask, jsonify, request
 from sbcapi.model import *
+from sbcapi.utils import *
 
 
 # Instantiate our node server
 app = Flask(__name__)
+app.json_encoder = BeerChainJSONEncoder
 
 # Generate a globally unique address for this node
 node_identifier = str(uuid4()).replace('-', '')
@@ -23,6 +25,7 @@ def node_info():
 
 @app.route('/add_new_block', methods=['POST'])
 def add_new_block():
+    # TODO
     values = request.get_json()
     # Check that the required fields are in the POSTed data
     required = ['block']
@@ -108,10 +111,10 @@ def get_pending_transactions():
 def get_job():
     values = request.get_json()
     # Check that the required fields are in the POSTed data
-    required = ['minerAddress']
+    required = ['minerAddress', 'miner_name']
     if not all(k in values for k in required):
         return 'Missing values', 400
-    hash, dificulty = node.get_mining_job(values['minerAddress'])
+    hash, dificulty = node.get_mining_job(values)
     response = {
         'hash': hash,
         'dificulty': dificulty

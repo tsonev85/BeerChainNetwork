@@ -2,7 +2,7 @@ import time
 from sbcapi.utils import *
 
 
-class Transaction(dict):
+class Transaction(object):
 
     def __init__(self,
                  to_address,
@@ -42,20 +42,6 @@ class Transaction(dict):
         self.date_added_to_block = None
         self.date_created = date_created
         self.transaction_hash = self.calculate_transaction_hash()
-        # Added to be json serializable
-        dict.__init__(self,
-                      from_address=self.from_address,
-                      to_address=self.to_address,
-                      value=self.value,
-                      fee_percent=self.fee_percent,
-                      sender_pub_key=self.sender_pub_key,
-                      sender_signature=self.sender_signature,
-                      date_received=self.date_received,
-                      mined_in_block_index=self.mined_in_block_index,
-                      paid=self.paid,
-                      date_added_to_block=self.date_added_to_block,
-                      transaction_hash=self.transaction_hash,
-                      date_created=self.date_created)
 
     def calculate_transaction_hash(self):
         """
