@@ -44,14 +44,14 @@ class Node(object):
         :param transaction: <Transaction> Transaction to be added to pending
         :return: <bool> Result of action
         """
-        """if not bool(transaction):
+        if not bool(transaction):
             "Transactions is empty"
             return False
         if not transaction.is_transaction_valid():
             print("Transaction is not valid.")
             return False
         if not self.new_block:
-            self.new_block = self.get_new_block()"""
+            self.new_block = self.get_new_block()
         self.new_block.transactions.append(transaction)
         return True
 
@@ -96,8 +96,10 @@ class Node(object):
 
     def confirm_mined_transactions(self, block):
         for transaction in block.transactions:
-            self.new_block.transactions.remove(transaction)
-            transaction.paid = True
+            for unpaid_transaction in self.new_block.transactions:
+                if unpaid_transaction.transaction_hash == transaction.transaction_hash:
+                    self.new_block.transactions.remove(unpaid_transaction)
+                    transaction.paid = True
 
     def remove_transaction(self):
         # TODO

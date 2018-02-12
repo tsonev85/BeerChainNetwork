@@ -156,7 +156,7 @@ class Miner(object):
                 self.run_job()
             else:
                 print("No new job aquired... Rescheduling... ")
-            time.sleep(160)
+            time.sleep(10)
 
     def set_hash_to_mine(self, hash_to_mine):
         """

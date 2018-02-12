@@ -5,7 +5,7 @@ import time
 class BlockChain(object):
 
     def __init__(self,
-                 difficulty=2):
+                 difficulty=5):
         """
         Constructor
         :param difficulty: <int>
