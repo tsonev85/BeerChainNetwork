@@ -1,0 +1,6 @@
+{
+    "miner_name":"Test_Miner_1",
+    "node_address":"Node_Address",
+    "payment_address":"My_Address",
+    "num_parallel_job":"4"
+}
