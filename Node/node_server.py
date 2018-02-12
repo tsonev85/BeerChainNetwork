@@ -21,6 +21,26 @@ def node_info():
     }
     return jsonify(response), 200
 
+@app.route('/add_new_block', methods=['POST'])
+def add_new_block():
+    values = request.get_json()
+    # Check that the required fields are in the POSTed data
+    required = ['block']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+    new_block = values['block']
+    required_for_new_block = ['']
+    if not all(k in new_block for k in required_for_new_block):
+        return 'Missing required values for new block creation', 400
+    new_block = Block()
+    # TODO check if exists
+    if not node.add_new_block(new_block):
+        return 'Block validation failed. Block NOT added to block chain', 400
+    return jsonify({
+        "result": "Block successfully added",
+        "block": new_block
+    }), 200
+
 @app.route('/chain', methods=["GET"])
 def get_block_chain():
     response = {
@@ -97,6 +117,16 @@ def get_job():
         'dificulty': dificulty
     }
     return jsonify(response), 200
+
+@app.route('/heres_beer', methods=['POST'])
+def receive_mining_job():
+    values = request.get_json()
+    required = ['miner_name', 'miner_address', 'original_hash', 'mined_hash', 'nonce', 'difficulty']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+    if not node.add_block_from_miner(values):
+        return 'Mined block validation error', 400
+    return 'Mined block successfully added.', 200
 
 if __name__ == '__main__':
     from argparse import ArgumentParser

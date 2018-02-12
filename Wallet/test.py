@@ -12,17 +12,17 @@ transaction = Transaction(
 )
 
 prev_block = Block(index=1,
-              prev_block_hash="aafaf",
-              date_created=99,
-              transactions=[transaction],
-                   mined_by="0")
+                   prev_block_hash="aafaf",
+                   date_created=99,
+                   transactions=[transaction],
+                   miner_name="0")
 prev_block.miner_hash = "aaaa"
 
 new_block = Block(index=2,
-              prev_block_hash=prev_block.block_hash,
-              date_created=99,
-              transactions=[transaction],
-                  mined_by="0")
+                  prev_block_hash=prev_block.block_hash,
+                  date_created=99,
+                  transactions=[transaction],
+                  miner_name="0")
 new_block.miner_hash='aaaa'
 # print(prev_block.calculate_transactions_hash())
 print(Block.is_block_valid(new_block,prev_block))

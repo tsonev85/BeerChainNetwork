@@ -15,7 +15,6 @@ class Node(object):
         :param block_chain: <BlockChain>
         :param balances: <dict> address => number
         :param mining_jobs: <dict> address => Block
-        :param new_block: <Block>
         """
         if block_chain is None:
             block_chain = BlockChain()
@@ -55,9 +54,40 @@ class Node(object):
         self.new_block.transactions.append(transaction)
         return True
 
-    def add_new_block(self):
-        # TODO
-        pass
+    def add_new_block(self, new_block):
+        """
+        Validates and adds new block to block chain
+        :param new_block: <Block> New block
+        :return: <bool> result of operation
+        """
+        if not Block.is_block_valid(new_block, self.block_chain.blocks[-1]):
+            print("New block is not valid")
+            return False
+        self.block_chain.blocks.append(new_block)
+        if not BlockChain.valid_chain(self.block_chain):
+            print("Blockchain became invalid after add of new block")
+            return False
+        return True
+
+    def add_block_from_miner(self, mined_block):
+        job_block = self.mining_jobs[mined_block['miner_address']]
+        if job_block is None:
+            print("Mining job not found.")
+            return False
+        if job_block.block_hash != mined_block['original_hash']:
+            print("Original hash mismatch")
+            return False
+        if job_block.difficulty != mined_block['difficulty']:
+            print("Difficulty mismatch")
+            return False
+        job_block.mined_by = mined_block['miner_name']
+        job_block.miner_address = mined_block['miner_address']
+        job_block.miner_hash = mined_block['mined_hash']
+        job_block.nonce = mined_block['nonce']
+        if not self.add_new_block(job_block):
+            print("Mined block validation failed")
+            return False
+        return True
 
     def remove_transaction(self):
         # TODO
@@ -104,5 +134,6 @@ class Node(object):
         return Block(index=len(self.block_chain.blocks),
                      prev_block_hash=self.block_chain.blocks[len(self.block_chain.blocks) - 1],
                      date_created=time.time(),
-                     mined_by="",
+                     miner_name="",
+                     miner_address="",
                      difficulty=self.block_chain.difficulty)

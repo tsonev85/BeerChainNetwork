@@ -14,7 +14,8 @@ class BlockChain(object):
             index=0,
             prev_block_hash=0,
             date_created=int(time.time()),
-            mined_by="BeerPpl",
+            miner_name="BeerPpl",
+            miner_address="",
             difficulty=difficulty
         )
         self.blocks =[]

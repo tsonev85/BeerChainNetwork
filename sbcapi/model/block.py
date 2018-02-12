@@ -7,7 +7,8 @@ class Block(dict):
                  index,
                  prev_block_hash,
                  date_created,
-                 mined_by,
+                 miner_name,
+                 miner_address,
                  difficulty,
                  transactions=None,
                  nonce=0):
@@ -19,7 +20,8 @@ class Block(dict):
         :param transactions: <Transaction[]>
         :param difficulty: <int>
         :param nonce: <int>
-        :param mined_by: <str>
+        :param miner_name: <str>
+        :param miner_address: <str>
         """
         if transactions is None:
             transactions = []
@@ -29,7 +31,8 @@ class Block(dict):
         self.transactions = transactions
         self.difficulty = difficulty
         self.nonce = nonce
-        self.mined_by = mined_by
+        self.mined_by = miner_name
+        self.miner_address = miner_address
         self.miner_hash = None
         self.block_hash = self.calculate_block_hash()
         # Added to be json serializable
@@ -42,6 +45,7 @@ class Block(dict):
                       nonce=self.nonce,
                       mined_by=self.mined_by,
                       miner_hash=self.miner_hash,
+                      miner_address = self.miner_address,
                       block_hash=self.block_hash)
 
     def calculate_transactions_hash(self):
