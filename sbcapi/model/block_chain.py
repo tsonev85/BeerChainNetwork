@@ -18,6 +18,7 @@ class BlockChain(object):
             miner_address="",
             difficulty=difficulty
         )
+        self.genesis_block.miner_hash = "000000"
         self.blocks =[]
         self.blocks.append(self.genesis_block)
         self.difficulty = difficulty

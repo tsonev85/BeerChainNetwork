@@ -67,6 +67,7 @@ class Node(object):
         if not BlockChain.valid_chain(self.block_chain):
             print("Blockchain became invalid after add of new block")
             return False
+
         return True
 
     def add_block_from_miner(self, mined_block):
@@ -105,8 +106,9 @@ class Node(object):
         """
         tmp_block = self.new_block
         tmp_block.mined_by = miner_address
+        tmp_block.block_hash = Block.calculate_block_hash(tmp_block)
         self.mining_jobs[miner_address] = tmp_block
-        return tmp_block.calculate_block_hash(), tmp_block.difficulty
+        return tmp_block.block_hash, tmp_block.difficulty
 
     def mined_hash(self, mined_hash, miner_address):
         # TODO
@@ -132,7 +134,7 @@ class Node(object):
         :return:
         """
         return Block(index=len(self.block_chain.blocks),
-                     prev_block_hash=self.block_chain.blocks[len(self.block_chain.blocks) - 1],
+                     prev_block_hash=self.block_chain.blocks[len(self.block_chain.blocks) - 1].miner_hash,
                      date_created=time.time(),
                      miner_name="",
                      miner_address="",
