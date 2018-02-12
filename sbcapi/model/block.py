@@ -100,6 +100,19 @@ class Block(dict):
             return False
         return True
 
+    @staticmethod
+    def get_paid_transactions(block):
+        paid_transactions = []
+        for transaction in block.transactions:
+            if transaction.paid:
+                paid_transactions.append(transaction)
+        return paid_transactions
 
-
+    @staticmethod
+    def get_unpaid_transactions(block):
+        unpaid_transactions = []
+        for transaction in block.transactions:
+            if not transaction.paid:
+                unpaid_transactions.append(transaction)
+        return unpaid_transactions
 

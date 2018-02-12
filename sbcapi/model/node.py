@@ -1,4 +1,5 @@
 from sbcapi.model import *
+import copy
 
 
 class Node(object):
@@ -43,14 +44,14 @@ class Node(object):
         :param transaction: <Transaction> Transaction to be added to pending
         :return: <bool> Result of action
         """
-        if not bool(transaction):
+        """if not bool(transaction):
             "Transactions is empty"
             return False
         if not transaction.is_transaction_valid():
             print("Transaction is not valid.")
             return False
         if not self.new_block:
-            self.new_block = self.get_new_block()
+            self.new_block = self.get_new_block()"""
         self.new_block.transactions.append(transaction)
         return True
 
@@ -63,11 +64,14 @@ class Node(object):
         if not Block.is_block_valid(new_block, self.block_chain.blocks[-1]):
             print("New block is not valid")
             return False
+        self.confirm_mined_transactions(new_block)
         self.block_chain.blocks.append(new_block)
         if not BlockChain.valid_chain(self.block_chain):
             print("Blockchain became invalid after add of new block")
             return False
 
+        future_block = self.get_new_block(self.new_block.transactions)
+        self.new_block = future_block
         return True
 
     def add_block_from_miner(self, mined_block):
@@ -90,6 +94,11 @@ class Node(object):
             return False
         return True
 
+    def confirm_mined_transactions(self, block):
+        for transaction in block.transactions:
+            self.new_block.transactions.remove(transaction)
+            transaction.paid = True
+
     def remove_transaction(self):
         # TODO
         pass
@@ -104,7 +113,7 @@ class Node(object):
         :param miner_address: <str> Address of miner
         :return: <tuple<str><int>>
         """
-        tmp_block = self.new_block
+        tmp_block = copy.deepcopy(self.new_block)
         tmp_block.mined_by = miner_address
         tmp_block.block_hash = Block.calculate_block_hash(tmp_block)
         self.mining_jobs[miner_address] = tmp_block
@@ -127,7 +136,7 @@ class Node(object):
         """
         self.block_chain.replace_chain(new_chain.blocks)
 
-    def get_new_block(self):
+    def get_new_block(self, transactions=None):
         """
         Returns a new block to be mined,
         all pending transactions will be added to this block
@@ -135,6 +144,7 @@ class Node(object):
         """
         return Block(index=len(self.block_chain.blocks),
                      prev_block_hash=self.block_chain.blocks[len(self.block_chain.blocks) - 1].miner_hash,
+                     transactions=transactions,
                      date_created=time.time(),
                      miner_name="",
                      miner_address="",
