@@ -5,7 +5,7 @@ from sbcapi.threading import AtomicCounter, AtomicBoolean
 
 
 class Miner(object):
-
+    job_finished = False
     def __init__(self):
         self.miner_name = None
         self.node_address = None
@@ -14,9 +14,9 @@ class Miner(object):
 
         if not self.init():
             return
-
-        self.nonce = AtomicCounter()
-        self.job_finished = AtomicBoolean()
+        self.step = 100000
+        self.nonce = AtomicCounter(0,self.step)
+        #self.job_finished = AtomicBoolean()
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=self.parallel_jobs)
         self.workers = []
         self.difficulty = ""
@@ -56,20 +56,25 @@ class Miner(object):
         if not self.check_hash_to_mine():
             raise Exception("Hash to mine is not properly set")
 
-        while not self.job_finished.get():
-            current_nonce = self.nonce.incrementAndGet()
-            hash = CryptoUtils.calc_miner_hash(self.hash_to_mine, current_nonce)
-            # print(threading.current_thread().getName(), " CHECKING =>> ", hash, " ", current_nonce) #left for debug purposes
-            if hash[:len(self.difficulty)] == self.difficulty:
-                self.job_finished.compareAndSet(False, True)
-                self.submit_result({
-                    'miner_name': self.miner_name,
-                    'miner_address': self.payment_address,
-                    'original_hash': self.hash_to_mine,
-                    'mined_hash': hash,
-                    'nonce': current_nonce,
-                    'difficulty': len(self.difficulty)
-                })
+        while not Miner.job_finished:
+            current_nonce_range = self.nonce.incrementAndGet()
+            for current_nonce in range(current_nonce_range-self.step, current_nonce_range):
+                if Miner.job_finished:
+                    print(threading.current_thread().getName(), " ", str(current_nonce))
+                    break
+                hash = CryptoUtils.calc_miner_hash(self.hash_to_mine, current_nonce)
+                #print(threading.current_thread().getName(), " CHECKING =>> ", hash, " ", current_nonce) #left for debug purposes
+                if hash[:len(self.difficulty)] == self.difficulty:
+                    #self.job_finished.compareAndSet(False, True)
+                    Miner.job_finished = True
+                    self.submit_result({
+                        'miner_name': self.miner_name,
+                        'miner_address': self.payment_address,
+                        'original_hash': self.hash_to_mine,
+                        'mined_hash': hash,
+                        'nonce': current_nonce,
+                        'difficulty': len(self.difficulty)
+                    })
 
     def submit_result(self, result):
         """
@@ -115,9 +120,9 @@ class Miner(object):
         Creates new threads to mine the hash, based on the parallel configuration
         :return:
         """
-        self.job_finished.set(True)
+        self.job_finished = True
         if len(self.workers) == 0:
-            self.job_finished.set(False)
+            self.job_finished = False
             self.nonce.reset()
         else:
             while len(self.workers) != 0:
@@ -127,7 +132,7 @@ class Miner(object):
                     if future.done():
                         self.workers.remove(future)
 
-            self.job_finished.set(False)
+            self.job_finished = False
             self.nonce.reset()
 
         for i in range(0, self.parallel_jobs):
