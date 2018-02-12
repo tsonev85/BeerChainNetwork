@@ -69,7 +69,6 @@ class Node(object):
         if not BlockChain.valid_chain(self.block_chain):
             print("Blockchain became invalid after add of new block")
             return False
-
         future_block = self.get_new_block(self.new_block.transactions)
         self.new_block = future_block
         return True
@@ -132,10 +131,10 @@ class Node(object):
     def replace_chain(self, new_chain):
         """
         Replaces node block chain with new one
-        :param new_chain: <dict> BlockChain
-        :return:
+        :param new_chain: <BlockChain>
+        :return: <bool>
         """
-        self.block_chain.replace_chain(new_chain.blocks)
+        return self.block_chain.replace_chain(new_chain.blocks)
 
     def get_new_block(self, transactions=None):
         """
@@ -150,3 +149,6 @@ class Node(object):
                      miner_name="",
                      miner_address="",
                      difficulty=self.block_chain.difficulty)
+
+    def broadcast_to_peers(self):
+        pass

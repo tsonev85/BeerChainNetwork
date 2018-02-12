@@ -39,6 +39,7 @@ def add_new_block():
     # TODO check if exists
     if not node.add_new_block(new_block):
         return 'Block validation failed. Block NOT added to block chain', 400
+    # broadcast to all except sender
     return jsonify({
         "result": "Block successfully added",
         "block": new_block
@@ -52,14 +53,52 @@ def get_block_chain():
     }
     return jsonify(response), 200
 
-@app.route('/add_peers', methods=['POST'])
-def add_peers():
+@app.route('/get_block_by_hash', methods=['POST'])
+def get_block_by_hash():
     values = request.get_json()
-    # Check that the required fields are in the POSTed data
-    required = ['peers']
+    required = ['hash']
     if not all(k in values for k in required):
         return 'Missing values', 400
-    node.peers.append(values['peers'])
+    response = [item for item in node.block_chain.blocks if item.miner_hash == values['hash']]
+    return jsonify(response), 200
+
+@app.route('/get_block_by_index', methods=['POST'])
+def get_block_by_index():
+    values = request.get_json()
+    required = ['index']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+    return jsonify(node.block_chain.blocks[int(values['index'])]), 200
+
+@app.route('/get_last_block', methods=['GET'])
+def get_last_block():
+    return jsonify(node.block_chain.blocks[-1]), 200
+
+@app.route('/get_blocks_range', methods=['POST'])
+def get_blocks_range():
+    values = request.get_json()
+    required = ['from_index', 'to_index']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+    from_index = int(values['from_index'])
+    to_index = int(values['to_index'])
+    range = to_index-from_index
+    if range < 0 or range > 50:
+        return 'Invalid range', 400
+    return jsonify(node.block_chain.blocks[from_index:to_index]), 200
+
+@app.route('/add_peer', methods=['POST'])
+def add_peer():
+    values = request.get_json()
+    # Check that the required fields are in the POSTed data
+    required = ['peer', 'node_identifier']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+    node.peers.append({
+        "peer": values['peer'],
+        "node_identifier": values['node_identifier']
+    })
+    # TODO
     return "Peers successfully added.", 200
 
 @app.route('/peers', methods=["GET"])
@@ -129,6 +168,7 @@ def receive_mining_job():
         return 'Missing values', 400
     if not node.add_block_from_miner(values):
         return 'Mined block validation error', 400
+    # broadcast to all
     return 'Mined block successfully added.', 200
 
 if __name__ == '__main__':

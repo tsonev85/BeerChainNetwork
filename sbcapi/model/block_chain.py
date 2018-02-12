@@ -36,9 +36,14 @@ class BlockChain(object):
         Replaces blocks in this block chain with a new block chain
         :param new_block_chain: <BlockChain> The new blockchain
         """
+        if len(new_block_chain.blocks) <= len(self.blocks):
+            print("Received chain is shorter than current chain.")
+            return False
         if not BlockChain.valid_chain(new_block_chain):
             print("Can not replace chain due to invalid element in new chain.")
+            return False
         self.blocks = new_block_chain
+        return True
 
     @staticmethod
     def valid_chain(chain):
