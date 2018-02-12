@@ -95,6 +95,13 @@ class Node(object):
         return True
 
     def confirm_mined_transactions(self, block):
+        """
+        Receives a block that is to be added to the blockchain, loops through its transactions(at this point,
+        these transaction should be from mined block and they should be paid(mined)) and removes them, if present,
+        from the pending transactions of the template block(self.new_block)
+        :param block:
+        :return:
+        """
         for transaction in block.transactions:
             for unpaid_transaction in self.new_block.transactions:
                 if unpaid_transaction.transaction_hash == transaction.transaction_hash:

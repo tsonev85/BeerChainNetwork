@@ -91,6 +91,11 @@ class Block(object):
 
     @staticmethod
     def get_paid_transactions(block):
+        """
+        Returns list with all transaction from a block marked with paid = True
+        :param block: <Block>
+        :return: <list>
+        """
         paid_transactions = []
         for transaction in block.transactions:
             if transaction.paid:
@@ -99,6 +104,11 @@ class Block(object):
 
     @staticmethod
     def get_unpaid_transactions(block):
+        """
+        Returns list with all transaction from a block marked with paid = False
+        :param block: <Block>
+        :return: <list>
+        """
         unpaid_transactions = []
         for transaction in block.transactions:
             if not transaction.paid:
