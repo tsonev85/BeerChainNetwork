@@ -13,7 +13,7 @@ class BlockChain(object):
         self.genesis_block = Block(
             index=0,
             prev_block_hash=0,
-            date_created=int(time.time()),
+            date_created=time.time(),
             miner_name="BeerPpl",
             miner_address="",
             difficulty=difficulty

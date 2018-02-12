@@ -1,7 +1,7 @@
 from sbcapi.utils import *
 
 
-class Block(dict):
+class Block(object):
 
     def __init__(self,
                  index,
@@ -35,18 +35,6 @@ class Block(dict):
         self.miner_address = miner_address
         self.miner_hash = None
         self.block_hash = Block.calculate_block_hash(self)
-        # Added to be json serializable
-        dict.__init__(self,
-                      index=self.index,
-                      prev_block_hash=self.prev_block_hash,
-                      date_created=self.date_created,
-                      transactions=self.transactions,
-                      difficulty=self.difficulty,
-                      nonce=self.nonce,
-                      mined_by=self.mined_by,
-                      miner_hash=self.miner_hash,
-                      miner_address = self.miner_address,
-                      block_hash=self.block_hash)
 
     @staticmethod
     def calculate_transactions_hash(block):
@@ -67,7 +55,8 @@ class Block(dict):
                + str(block.date_created) \
                + Block.calculate_transactions_hash(block) \
                + str(block.difficulty) \
-               + str(block.mined_by)
+               + str(block.mined_by) \
+               + str(block.miner_address)
         return CryptoUtils.calc_sha256(data)
 
     @staticmethod
