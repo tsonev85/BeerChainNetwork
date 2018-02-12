@@ -89,7 +89,10 @@ class Miner(object):
         :return: <bool>
         """
         headers = {'content-type': 'application/json'}
-        data = {"minerAddress": self.payment_address}
+        data = {
+            "miner_name": self.miner_name,
+            "minerAddress": self.payment_address
+        }
         resp = req.post("http://localhost:5555/give_me_beer", data=json.dumps(data), headers=headers)
         json_resp = json.loads(resp.content.decode())
 
