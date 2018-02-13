@@ -1,4 +1,6 @@
 from sbcapi.model import *
+from sbcapi.utils import *
+from sbcapi.utils.ArgParser import *
 import copy
 
 
@@ -44,11 +46,6 @@ class Node(object):
         :param transaction: <Transaction> Transaction to be added to pending
         :return: <bool> Result of action
         """
-
-        if ArgParser.get_args().debug:
-            self.new_block.transactions.append(transaction)
-            return True
-
         if not bool(transaction):
             "Transactions is empty"
             return False
@@ -76,20 +73,20 @@ class Node(object):
             return False
         future_block = self.get_new_block(self.new_block.transactions)
         self.new_block = future_block
+
         return True
 
     def add_block_from_miner(self, mined_block):
         job_block = self.mining_jobs[mined_block['miner_address']]
-        if not ArgParser.get_args().debug:
-            if job_block is None:
-                print("Mining job not found.")
-                return False
-            if job_block.block_hash != mined_block['original_hash']:
-                print("Original hash mismatch")
-                return False
-            if job_block.difficulty != mined_block['difficulty']:
-                print("Difficulty mismatch")
-                return False
+        if job_block is None:
+            print("Mining job not found.")
+            return False
+        if job_block.block_hash != mined_block['original_hash']:
+            print("Original hash mismatch")
+            return False
+        if job_block.difficulty != mined_block['difficulty']:
+            print("Difficulty mismatch")
+            return False
         job_block.mined_by = mined_block['miner_name']
         job_block.miner_address = mined_block['miner_address']
         job_block.miner_hash = mined_block['mined_hash']

@@ -1,4 +1,5 @@
 from sbcapi.utils import *
+from sbcapi.utils.ArgParser import *
 
 
 class Block(object):
@@ -11,30 +12,36 @@ class Block(object):
                  miner_address,
                  difficulty,
                  transactions=None,
-                 nonce=0):
+                 nonce=None,
+                 miner_hash=None,
+                 block_hash=None):
         """
         Constructor
         :param index: <int>
         :param prev_block_hash: <hex>
-        :param date_created: <int>
-        :param transactions: <Transaction[]>
-        :param difficulty: <int>
-        :param nonce: <int>
+        :param date_created: <float>
         :param miner_name: <str>
         :param miner_address: <str>
+        :param difficulty: <int>
+        :param transactions: <Transaction[]>
+        :param nonce: <int>
+        :param miner_hash: <hex>
+        :param block_hash: <hex>
         """
-        if transactions is None:
-            transactions = []
         self.index = index
         self.prev_block_hash = prev_block_hash
         self.date_created = date_created
-        self.transactions = transactions
         self.difficulty = difficulty
         self.nonce = nonce
         self.mined_by = miner_name
         self.miner_address = miner_address
-        self.miner_hash = None
-        self.block_hash = Block.calculate_block_hash(self)
+        self.miner_hash = miner_hash
+        if transactions is None:
+            transactions = []
+        self.transactions = transactions
+        if block_hash is None:
+            block_hash = Block.calculate_block_hash(self)
+        self.block_hash = block_hash
 
     @staticmethod
     def calculate_transactions_hash(block):
