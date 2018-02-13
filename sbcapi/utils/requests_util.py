@@ -16,7 +16,8 @@ def get_block_by_index(peer, index):
     request_data = {"index": str(index)}
     url = peer + "/get_block_by_index"
     response = r.post(url, data=json.dumps(request_data), headers=HEADERS).content.decode()
-    block_from_peer = json2obj(response)
+    # block_from_peer = json2obj(response)
+    block_from_peer = json.loads(response, cls=Block)
     print(block_from_peer)
 
 def _json_object_hook(d):
@@ -25,7 +26,7 @@ def _json_object_hook(d):
 def json2obj(data):
     return json.loads(data, object_hook=_json_object_hook)
 
-get_block_by_index("http://localhost:5555", 1)
+# get_block_by_index("http://localhost:5555", 1)
 # @app.route('/get_block_by_hash', methods=['POST'])
 # def get_block_by_hash():
 #     values = request.get_json()
