@@ -75,6 +75,8 @@ class Block(object):
         :param previous_block: <Block> Previous block
         :return: <bool>
         """
+        if ArgParser.get_args().debug:
+            return True
         if not previous_block.index + 1 == new_block.index:
             print("Invalid index.")
             return False

@@ -2,6 +2,7 @@ from uuid import uuid4
 from flask import Flask, jsonify, request
 from sbcapi.model import *
 from sbcapi.utils import *
+from sbcapi.utils import ArgParser
 
 
 # Instantiate our node server
@@ -22,6 +23,7 @@ def node_info():
         'lengthOfBlockChain': len(node.block_chain.blocks)
     }
     return jsonify(response), 200
+
 
 @app.route('/add_new_block', methods=['POST'])
 def add_new_block():
@@ -45,6 +47,7 @@ def add_new_block():
         "block": new_block
     }), 200
 
+
 @app.route('/chain', methods=["GET"])
 def get_block_chain():
     response = {
@@ -52,6 +55,7 @@ def get_block_chain():
         'lengthOfBlockChain': len(node.block_chain.blocks)
     }
     return jsonify(response), 200
+
 
 @app.route('/get_block_by_hash', methods=['POST'])
 def get_block_by_hash():
@@ -62,6 +66,7 @@ def get_block_by_hash():
     response = [item for item in node.block_chain.blocks if item.miner_hash == values['hash']]
     return jsonify(response), 200
 
+
 @app.route('/get_block_by_index', methods=['POST'])
 def get_block_by_index():
     values = request.get_json()
@@ -70,9 +75,11 @@ def get_block_by_index():
         return 'Missing values', 400
     return jsonify(node.block_chain.blocks[int(values['index'])]), 200
 
+
 @app.route('/get_last_block', methods=['GET'])
 def get_last_block():
     return jsonify(node.block_chain.blocks[-1]), 200
+
 
 @app.route('/get_blocks_range', methods=['POST'])
 def get_blocks_range():
@@ -86,6 +93,7 @@ def get_blocks_range():
     if range < 0 or range > 50:
         return 'Invalid range', 400
     return jsonify(node.block_chain.blocks[from_index:to_index]), 200
+
 
 @app.route('/add_peer', methods=['POST'])
 def add_peer():
@@ -101,12 +109,14 @@ def add_peer():
     # TODO
     return "Peers successfully added.", 200
 
+
 @app.route('/peers', methods=["GET"])
 def get_peers():
     response = {
         'peers': node.peers
     }
     return jsonify(response), 200
+
 
 @app.route('/add_transactions', methods=['POST'])
 def add_transactions():
@@ -139,12 +149,14 @@ def add_transactions():
     }
     return jsonify(response), 200
 
+
 @app.route('/pending_transactions', methods=["GET"])
 def get_pending_transactions():
     response = {
         'pendingTransactions': node.new_block.transactions
     }
     return jsonify(response), 200
+
 
 @app.route('/give_me_beer', methods=['POST'])
 def get_job():
@@ -160,6 +172,7 @@ def get_job():
     }
     return jsonify(response), 200
 
+
 @app.route('/heres_beer', methods=['POST'])
 def receive_mining_job():
     values = request.get_json()
@@ -171,13 +184,8 @@ def receive_mining_job():
     # broadcast to all
     return 'Mined block successfully added.', 200
 
+
 if __name__ == '__main__':
-    from argparse import ArgumentParser
-    parser = ArgumentParser()
-    parser.add_argument('-p', '--port', default=5555, type=int, help='port to listen on')
-    args = parser.parse_args()
-    port = args.port
+    port = ArgParser.get_args().port
     app.run(host='127.0.0.1', port=port)
-
-
 
