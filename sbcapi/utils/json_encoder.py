@@ -7,7 +7,7 @@ class BeerChainJSONEncoder(JSONEncoder):
         """
         Serialize object to JSON
         :param obj: <object>
-        :return:
+        :return: <json object>
         """
         if isinstance(obj, Block):
             return {
@@ -41,6 +41,11 @@ class BeerChainJSONEncoder(JSONEncoder):
 
 
 def json_block_decoder(obj):
+    """
+    Deserialize json object to Block object
+    :param obj: <json object>
+    :return: <Block>
+    """
     if 'block_hash' in obj and 'miner_hash' in obj:
         transactions = []
         for transaction in obj['transactions']:
@@ -60,6 +65,11 @@ def json_block_decoder(obj):
 
 
 def json_transaction_decoder(obj):
+    """
+    Deserialize json object to Transaction object
+    :param obj: <json object>
+    :return: <Transaction>
+    """
     if 'to_address' in obj and 'value' in obj:
         return Transaction(from_address=obj['from_address'],
                            to_address=obj['to_address'],
