@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request
 from sbcapi.model import *
 from sbcapi.utils import *
 from sbcapi.utils import ArgParser
+import threading
 
 
 # Instantiate our node server
@@ -185,7 +186,12 @@ def receive_mining_job():
     return 'Mined block successfully added.', 200
 
 
+def flask_runner(port):
+    app.run(host='127.0.0.1', port=port)
+
+
 if __name__ == '__main__':
     port = ArgParser.get_args().port
-    app.run(host='127.0.0.1', port=port)
+    flask_starter = threading.Thread(target=flask_runner, args=[port])
+    flask_starter.start()
 
