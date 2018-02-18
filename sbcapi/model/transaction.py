@@ -13,19 +13,24 @@ class Transaction(object):
                  mined_in_block_index=None,
                  from_address=None,
                  paid=False,
-                 fee_percent=5):
+                 fee_percent=5,
+                 date_received=None,
+                 date_added_to_block = None,
+                 transaction_hash=None):
         """
         Constructor
-        :param from_address: <str>
         :param to_address: <str>
         :param value: <int>
-        :param fee_percent: <int>
-        :param sender_pub_key: <hex>
-        :param sender_signature: <tuple<hex><hex>>
-        :param mined_in_block_index: <int>
-        :param date_added_to_block: <int>
+        :param sender_pub_key: <tuple<int><int>>
+        :param sender_signature: <tuple<int><int>>
         :param date_created: <float>
+        :param mined_in_block_index: <int>
+        :param from_address: <str>
         :param paid: <bool>
+        :param fee_percent: <int>
+        :param date_received: <float>
+        :param date_added_to_block: <float>
+        :param transaction_hash: <float>
         """
         if from_address is None:
             from_address = CryptoUtils.generate_address(sender_pub_key)
@@ -36,12 +41,16 @@ class Transaction(object):
         self.fee_percent = fee_percent
         self.sender_pub_key = sender_pub_key
         self.sender_signature = sender_signature
-        self.date_received = time.time()
+        if date_received is None:
+            date_received = time.time()
+        self.date_received = date_received
         self.mined_in_block_index = mined_in_block_index
         self.paid = paid
-        self.date_added_to_block = None
+        self.date_added_to_block = date_added_to_block
         self.date_created = date_created
-        self.transaction_hash = self.calculate_transaction_hash()
+        if transaction_hash is None:
+            transaction_hash = self.calculate_transaction_hash()
+        self.transaction_hash = transaction_hash
 
     def calculate_transaction_hash(self):
         """

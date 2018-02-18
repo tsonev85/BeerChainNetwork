@@ -1,51 +1,64 @@
 import requests as r
 import json
-from collections import namedtuple
 from sbcapi.model import *
+from sbcapi.utils import *
 
 
 HEADERS = {'content-type': 'application/json'}
 
 def get_block_chain_from_peer(peer):
-    peer_chain = r.get(peer+"/chain").content.decode()
-    print(peer_chain)
-    # return BlockChain()
+    """
+    Retrieves block chain from provided peer
+    :param peer: <str>
+    :return: <Block[]>
+    """
+    response = r.get(peer+"/chain").content.decode()
+    return json.loads(response, object_hook=json_block_decoder)
 
 def get_block_by_index(peer, index):
-    # TODO Block is deserelialized from JSON, but list of transactions need different object hook
+    """
+    Retrieves a block by its index from provided peer
+    :param peer: <str>
+    :param index: <str>
+    :return: <Block>
+    """
     request_data = {"index": str(index)}
     url = peer + "/get_block_by_index"
     response = r.post(url, data=json.dumps(request_data), headers=HEADERS).content.decode()
-    # block_from_peer = json2obj(response)
-    block_from_peer = json.loads(response, cls=Block)
-    print(block_from_peer)
+    return json.loads(response, object_hook=json_block_decoder)
 
-def _json_object_hook(d):
-    return namedtuple('Block', d.keys())(*d.values())
+def get_last_block(peer):
+    """
+    Retrieves the last block of provided peer block chain
+    :param peer: <str>
+    :return: <Block>
+    """
+    response = r.get(peer + "/get_last_block").content.decode()
+    return json.loads(response, object_hook=json_block_decoder)
 
-def json2obj(data):
-    return json.loads(data, object_hook=_json_object_hook)
+def get_block_by_hash(peer, hash):
+    """
+    Retrieves a block by MINER HASH from provided peer
+    :param peer: <str>
+    :param hash: <str>
+    :return: <Block>
+    """
+    request_data = {"hash": str(hash)}
+    url = peer + "/get_block_by_hash"
+    response = r.post(url, data=json.dumps(request_data), headers=HEADERS).content.decode()
+    return json.loads(response, object_hook=json_block_decoder)
 
-# get_block_by_index("http://localhost:5555", 1)
-# @app.route('/get_block_by_hash', methods=['POST'])
-# def get_block_by_hash():
-#     values = request.get_json()
-#     required = ['hash']
-#     if not all(k in values for k in required):
-#         return 'Missing values', 400
-#     response = [item for item in node.block_chain.blocks if item.miner_hash == values['hash']]
-#     return jsonify(response), 200
-#
-# @app.route('/get_block_by_index', methods=['POST'])
-# def get_block_by_index():
-#     values = request.get_json()
-#     required = ['index']
-#     if not all(k in values for k in required):
-#         return 'Missing values', 400
-#     return jsonify(node.block_chain.blocks[int(values['index'])]), 200
-#
-# @app.route('/get_last_block', methods=['GET'])
-# def get_last_block():
-#     return jsonify(node.block_chain.blocks[-1]), 200
-# @app.route('/get_blocks_range', methods=['POST'])
-# def get_blocks_range():
+def get_blocks_range(peer, from_index, to_index):
+    """
+    Retrieves a range of blocks by the specified from and to indexes
+    :param peer: <str>
+    :param from_index: <str>
+    :param to_index: <str>
+    :return: <Block[]>
+    """
+    request_data = {"from_index": str(from_index),
+                    "to_index": str(to_index)}
+    url = peer + "/get_blocks_range"
+    response = r.post(url, data=json.dumps(request_data), headers=HEADERS).content.decode()
+    return json.loads(response, object_hook=json_block_decoder)
+

@@ -58,7 +58,11 @@ class CryptoUtils(object):
         :param signature: <tuple<int,int>>
         :return: <bool>
         """
-        return verify(generator_secp256k1, public_key, hashed_data, signature)
+        try:
+            return verify(generator_secp256k1, public_key, hashed_data, signature)
+        except:
+            print("Provided data is invalid.")
+            return False
 
     @staticmethod
     def generate_private_key(password):

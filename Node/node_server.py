@@ -64,7 +64,8 @@ def get_block_by_hash():
     required = ['hash']
     if not all(k in values for k in required):
         return 'Missing values', 400
-    response = [item for item in node.block_chain.blocks if item.miner_hash == values['hash']]
+    # return None if nothing found
+    response = next((item for item in node.block_chain.blocks if item.miner_hash == values['hash']), None)
     return jsonify(response), 200
 
 
@@ -121,6 +122,7 @@ def get_peers():
 
 @app.route('/add_transactions', methods=['POST'])
 def add_transactions():
+    # TODO make it use json deserializer
     values = request.get_json()
     # Check that the required fields are in the POSTed data
     required = ['transactions']
