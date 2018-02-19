@@ -21,6 +21,7 @@ class BeerChainJSONEncoder(JSONEncoder):
                 'miner_address': obj.miner_address,
                 'miner_hash': obj.miner_hash,
                 'block_hash': obj.block_hash,
+                'current_state_balances': obj.current_state_balances,
             }
         if isinstance(obj, Transaction):
             return {
@@ -60,7 +61,8 @@ def json_block_decoder(obj):
                      miner_name=obj['miner_name'],
                      miner_address=obj['miner_address'],
                      miner_hash=obj['miner_hash'],
-                     block_hash=obj['block_hash'])
+                     block_hash=obj['block_hash'],
+                     current_state_balances=obj['current_state_balances'])
     return obj
 
 
