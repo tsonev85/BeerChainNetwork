@@ -53,6 +53,8 @@ class Node(object):
         if not transaction.is_transaction_valid():
             print("Transaction is not valid.")
             return False
+        if not self.check_balance(transaction.from_address, transaction.value):
+            return False
         if not self.new_block:
             self.new_block = self.get_new_block()
         self.new_block.transactions.append(transaction)
@@ -128,9 +130,9 @@ class Node(object):
         :param new_block: <block>
         """
         for transaction in new_block.transactions:
-            sender_address = transaction['from_address']
-            receiver_address = transaction['to_address']
-            value = transaction['value']
+            sender_address = transaction.from_address
+            receiver_address = transaction.to_address
+            value = transaction.value
             # we assume all validation and balance checks have been passed since this is already mined block
             new_block.current_state_balances[receiver_address] = \
                 new_block.current_state_balances.get(receiver_address, 0) + value
@@ -138,9 +140,16 @@ class Node(object):
                 new_block.current_state_balances.get(sender_address, 0) - value
 
     def check_balance(self, address, value):
-        # TODO
-        self.block_chain.blocks[-1].current_state_balances.get(address, 0)
-        pass
+        """
+        Checks if the provided account has sufficient funds.
+        :param address: <str>
+        :param value: <int>
+        :return: <bool>
+        """
+        if not self.block_chain.blocks[-1].current_state_balances.get(address, 0) >= value:
+            print("Address " + address + " does not have enough balance.")
+            return False
+        return True
 
     def get_mining_job(self, data):
         """

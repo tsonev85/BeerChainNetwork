@@ -41,6 +41,8 @@ class Block(object):
         if transactions is None:
             transactions = []
         self.transactions = transactions
+        if current_state_balances is None:
+            current_state_balances = {}
         self.current_state_balances = current_state_balances
         if block_hash is None:
             block_hash = Block.calculate_block_hash(self)
