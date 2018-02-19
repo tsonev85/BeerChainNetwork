@@ -14,7 +14,8 @@ class Block(object):
                  transactions=None,
                  nonce=None,
                  miner_hash=None,
-                 block_hash=None):
+                 block_hash=None,
+                 current_state_balances=None):
         """
         Constructor
         :param index: <int>
@@ -27,6 +28,7 @@ class Block(object):
         :param nonce: <int>
         :param miner_hash: <hex>
         :param block_hash: <hex>
+        :param current_state_balances: <dict> address => balance
         """
         self.index = index
         self.prev_block_hash = prev_block_hash
@@ -39,6 +41,7 @@ class Block(object):
         if transactions is None:
             transactions = []
         self.transactions = transactions
+        self.current_state_balances = current_state_balances
         if block_hash is None:
             block_hash = Block.calculate_block_hash(self)
         self.block_hash = block_hash

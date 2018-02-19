@@ -39,9 +39,9 @@ def add_new_block():
     if not all(k in new_block for k in required_for_new_block):
         return 'Missing required values for new block creation', 400
     new_block = Block()
-    # TODO check if exists
-    if not node.add_new_block(new_block):
-        return 'Block validation failed. Block NOT added to block chain', 400
+    # TODO check if exists, add validation etc. (DO NOT use node.add_new_block(new_block))
+    # if not node.add_new_block(new_block):
+    #     return 'Block validation failed. Block NOT added to block chain', 400
     # broadcast to all except sender
     return jsonify({
         "result": "Block successfully added",

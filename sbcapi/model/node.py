@@ -8,14 +8,12 @@ class Node(object):
     def __init__(self,
                  node_identifier,
                  peers=None,
-                 balances=None,
                  block_chain=None,
                  mining_jobs=None):
         """
         Constructor
         :param peers: <str[]>
         :param block_chain: <BlockChain>
-        :param balances: <dict> address => number
         :param mining_jobs: <dict> address => Block
         """
         if block_chain is None:
@@ -27,7 +25,6 @@ class Node(object):
         self.node_identifier = node_identifier
         self.peers = peers
         self.block_chain = block_chain
-        self.balances = balances
         self.mining_jobs = mining_jobs
         self.new_block = self.get_new_block()
 
@@ -71,6 +68,7 @@ class Node(object):
             print("New block is not valid")
             return False
         self.confirm_mined_transactions(new_block)
+        self.update_balance(new_block)
         self.block_chain.blocks.append(new_block)
         if not BlockChain.valid_chain(self.block_chain):
             print("Blockchain became invalid after add of new block")
@@ -80,6 +78,11 @@ class Node(object):
         return True
 
     def add_block_from_miner(self, mined_block):
+        """
+        Validates and adds new mined block from miner to block chain
+        :param mined_block: <Block>
+        :return: <bool> Result of operation
+        """
         job_block = self.mining_jobs[mined_block['miner_address']]
         if not ArgParser.get_args().debug:
             if job_block is None:
@@ -118,8 +121,25 @@ class Node(object):
         # TODO
         pass
 
-    def update_balance(self):
+    def update_balance(self, new_block):
+        """
+        Updates the current state of balances inside new_block
+        based on passed and validated transactions in new_block
+        :param new_block: <block>
+        """
+        for transaction in new_block.transactions:
+            sender_address = transaction['from_address']
+            receiver_address = transaction['to_address']
+            value = transaction['value']
+            # we assume all validation and balance checks have been passed since this is already mined block
+            new_block.current_state_balances[receiver_address] = \
+                new_block.current_state_balances.get(receiver_address, 0) + value
+            new_block.current_state_balances[sender_address] = \
+                new_block.current_state_balances.get(sender_address, 0) - value
+
+    def check_balance(self, address, value):
         # TODO
+        self.block_chain.blocks[-1].current_state_balances.get(address, 0)
         pass
 
     def get_mining_job(self, data):
