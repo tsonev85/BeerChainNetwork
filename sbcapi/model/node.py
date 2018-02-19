@@ -1,6 +1,7 @@
 from sbcapi.model import *
 from sbcapi.utils.ArgParser import *
 import copy
+import threading
 
 
 class Node(object):
@@ -30,14 +31,27 @@ class Node(object):
         self.balances = balances
         self.mining_jobs = mining_jobs
         self.new_block = self.get_new_block()
+        self.peers_lock = threading.Lock()
+        self.block_chain_lock = threading.Lock()
+        # No mining when the blockchain is syncing through the network
+        self.blockchain_sync_lock = threading.Lock()
 
     def add_peer(self, peer):
         """
-        Adds new peer
+        Adds new peer. Method is synchronized
         :param peer: <str> new peer
         """
         # TODO add validation of peer format
-        self.peers.append(peer)
+        with self.peers_lock:
+            self.peers.append(peer)
+
+    def get_peers(self):
+        """
+        return Node peers, method is synchronized
+        :return: dict[]
+        """
+        with self.peers_lock:
+            return self.peers
 
     def add_to_pending_transactions(self, transaction):
         """
@@ -61,6 +75,14 @@ class Node(object):
         self.new_block.transactions.append(transaction)
         return True
 
+    def get_blockchain(self):
+        """
+        Synchronized returns the blockchain
+        :return: <BlockChain>
+        """
+        with self.block_chain_lock:
+            return self.block_chain
+
     def add_new_block(self, new_block):
         """
         Validates and adds new block to block chain
@@ -71,12 +93,13 @@ class Node(object):
             print("New block is not valid")
             return False
         self.confirm_mined_transactions(new_block)
-        self.block_chain.blocks.append(new_block)
-        if not BlockChain.valid_chain(self.block_chain):
-            print("Blockchain became invalid after add of new block")
-            return False
-        future_block = self.get_new_block(self.new_block.transactions)
-        self.new_block = future_block
+        with self.block_chain_lock:
+            self.block_chain.blocks.append(new_block)
+            if not BlockChain.valid_chain(self.block_chain):
+                print("Blockchain became invalid after add of new block")
+                return False
+            future_block = self.get_new_block(self.new_block.transactions)
+            self.new_block = future_block
         return True
 
     def add_block_from_miner(self, mined_block):
@@ -84,21 +107,21 @@ class Node(object):
         if not ArgParser.get_args().debug:
             if job_block is None:
                 print("Mining job not found.")
-                return False
+                return None
             if job_block.block_hash != mined_block['original_hash']:
                 print("Original hash mismatch")
-                return False
+                return None
             if job_block.difficulty != mined_block['difficulty']:
                 print("Difficulty mismatch")
-                return False
+                return None
         job_block.mined_by = mined_block['miner_name']
         job_block.miner_address = mined_block['miner_address']
         job_block.miner_hash = mined_block['mined_hash']
         job_block.nonce = mined_block['nonce']
         if not self.add_new_block(job_block):
             print("Mined block validation failed")
-            return False
-        return True
+            return None
+        return job_block
 
     def confirm_mined_transactions(self, block):
         """

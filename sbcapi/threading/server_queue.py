@@ -21,7 +21,7 @@ class ServerTaskQueue:
             args = task_description['arguments']
             if task is None:
                 break
-            task(args)
+            task(*args)
             self.task_queue.task_done()
 
     def put_task(self, task, arguments=None):
@@ -33,3 +33,12 @@ class ServerTaskQueue:
     def stop_queue(self):
         for i in range(self.workers_size):
             self.put_task(None)
+
+
+# def tst(arg1, arg2):
+#     print("Arg1: ", arg1, "Arg2: ", arg2)
+#
+# q = ServerTaskQueue()
+# q.put_task(tst, ("123", "456"))
+# print(("123", "456"))
+# q.stop_queue()

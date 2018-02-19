@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request
 from sbcapi.model import *
 from sbcapi.utils import *
 from sbcapi.utils import ArgParser
+from sbcapi.threading.server_queue import *
 import threading
 
 
@@ -16,12 +17,15 @@ node_identifier = str(uuid4()).replace('-', '')
 # Instantiate the Node
 node = Node(node_identifier)
 
+# Instantiate the server task queue
+task_queue = ServerTaskQueue()
+
 
 @app.route('/', methods=["GET"])
 def node_info():
     response = {
         'nodeIdentifier': node.node_identifier,
-        'lengthOfBlockChain': len(node.block_chain.blocks)
+        'lengthOfBlockChain': len(node.get_blockchain().blocks)
     }
     return jsonify(response), 200
 
@@ -80,7 +84,7 @@ def get_block_by_index():
 
 @app.route('/get_last_block', methods=['GET'])
 def get_last_block():
-    return jsonify(node.block_chain.blocks[-1]), 200
+    return jsonify(node.get_blockchain().blocks[-1]), 200
 
 
 @app.route('/get_blocks_range', methods=['POST'])
@@ -104,10 +108,20 @@ def add_peer():
     required = ['peer', 'node_identifier']
     if not all(k in values for k in required):
         return 'Missing values', 400
-    node.peers.append({
+
+    if values['peer'] == node_identifier:
+        return 'Cant add itself', 400
+
+    existing_peer = next((peer for peer in node.get_peers() if peer['peer'] == values['peer']), None)
+    if existing_peer:
+        return 'Peer already exists', 400
+
+    new_peer = {
         "peer": values['peer'],
         "node_identifier": values['node_identifier']
-    })
+    }
+    node.add_peer(new_peer)
+    task_queue.put_task(sync_peers, (node, [new_peer]))
     # TODO
     return "Peers successfully added.", 200
 
@@ -115,7 +129,7 @@ def add_peer():
 @app.route('/peers', methods=["GET"])
 def get_peers():
     response = {
-        'peers': node.peers
+        'peers': node.get_peers()
     }
     return jsonify(response), 200
 
@@ -163,37 +177,105 @@ def get_pending_transactions():
 
 @app.route('/give_me_beer', methods=['POST'])
 def get_job():
-    values = request.get_json()
-    # Check that the required fields are in the POSTed data
-    required = ['minerAddress', 'miner_name']
-    if not all(k in values for k in required):
-        return 'Missing values', 400
-    hash, dificulty = node.get_mining_job(values)
-    response = {
-        'hash': hash,
-        'dificulty': dificulty
-    }
-    return jsonify(response), 200
+    with node.blockchain_sync_lock:
+        values = request.get_json()
+        # Check that the required fields are in the POSTed data
+        required = ['minerAddress', 'miner_name']
+        if not all(k in values for k in required):
+            return 'Missing values', 400
+        hash, dificulty = node.get_mining_job(values)
+        response = {
+            'hash': hash,
+            'dificulty': dificulty
+        }
+        return jsonify(response), 200
 
 
 @app.route('/heres_beer', methods=['POST'])
 def receive_mining_job():
-    values = request.get_json()
-    required = ['miner_name', 'miner_address', 'original_hash', 'mined_hash', 'nonce', 'difficulty']
-    if not all(k in values for k in required):
-        return 'Missing values', 400
-    if not node.add_block_from_miner(values):
-        return 'Mined block validation error', 400
-    # broadcast to all
-    return 'Mined block successfully added.', 200
+    with node.blockchain_sync_lock:
+        values = request.get_json()
+        required = ['miner_name', 'miner_address', 'original_hash', 'mined_hash', 'nonce', 'difficulty']
+        if not all(k in values for k in required):
+            return 'Missing values', 400
+        mined_block = node.add_block_from_miner(values)
+        if mined_block is None:
+            return 'Mined block validation error', 400
+        task_queue.put_task(broadcast_newly_mined_block, (node, mined_block))
+        return 'Mined block successfully added.', 200
 
 
 def flask_runner(port):
-    app.run(host='127.0.0.1', port=port)
+    app.run(threaded=True, host='127.0.0.1', port=port)
+
+
+def peers_list_sync():
+    """
+    On an interval loops through all node peers and refreshes the list
+    """
+    while True:
+        time.sleep(60)
+        peers = node.get_peers()
+        task_queue.put_task(sync_peers, (node, peers))
+
+
+def blockchain_sync_timer():
+    """
+    Puts blockchain_sync task in the queue on set interval
+    """
+    while True:
+        task_queue.put_task(blockchain_sync, node)
+        time.sleep(15)
+
+
+def blockchain_sync(node):
+    """
+    Loops through node peers, request their blockchain length, if theirs is bigger that ours, syncs the missing blocks
+    """
+    with node.blockchain_sync_lock:
+        try:
+            peer_to_sync_with = None
+            best_block = None
+            for peer_data in node.get_peers():
+                peer = peer_data['peer']
+                block = get_last_block(peer)
+                if block.index > node.get_blockchain().blocks[-1].index:
+                    if best_block is None:
+                        best_block = block
+                        peer_to_sync_with = peer
+                    elif block.index > best_block.index:
+                        best_block = block
+                        peer_to_sync_with = peer
+
+            starting_block = None
+            i = -1
+            while starting_block is None:
+                starting_block = get_block_by_hash(peer_to_sync_with, node.get_blockchain().blocks[i].miner_hash)
+                i -= 1
+
+            from_index = starting_block.index
+            to_index = int(from_index) + 50
+            while True:
+                blocks_to_add = get_blocks_range(peer_to_sync_with, from_index, to_index)
+                if len(blocks_to_add) == 0:
+                    break
+                for block in blocks_to_add:
+                    node.add_new_block(block)
+                from_index = to_index
+                to_index += 50
+
+        except Exception as ex:
+            print("Something went wrong while trying to sync the blockchain: " + str(ex))
 
 
 if __name__ == '__main__':
     port = ArgParser.get_args().port
-    flask_starter = threading.Thread(target=flask_runner, args=[port])
+    flask_starter = threading.Thread(name="Flask_Runner_Thread", target=flask_runner, args=[port])
     flask_starter.start()
-
+    # tested with 2 nodes, but still needs testing before live
+    # peers_list_syncer = threading.Thread(name="Peer_Sync_Thread", target=peers_list_sync)
+    # peers_list_syncer.start()
+    #
+    # Not tested yet, better stay commented
+    # blockchain_synchronizer = threading.Thread(name="Blockchain_Sync_Thread", target=blockchain_sync_timer)
+    # blockchain_synchronizer.start()
