@@ -92,12 +92,13 @@ class Node(object):
             return False
         self.confirm_mined_transactions(new_block)
         with self.block_chain_lock:
-            self.update_balance(new_block)
             self.block_chain.blocks.append(new_block)
             if not BlockChain.valid_chain(self.block_chain):
                 print("Blockchain became invalid after add of new block")
                 return False
             future_block = self.get_new_block(self.new_block.transactions)
+            # add current state of balances to the future block
+            future_block.current_state_balances = new_block.current_state_balances
             self.new_block = future_block
         return True
 
@@ -122,6 +123,7 @@ class Node(object):
         job_block.miner_address = mined_block['miner_address']
         job_block.miner_hash = mined_block['mined_hash']
         job_block.nonce = mined_block['nonce']
+        self.update_balance(job_block)
         if not self.add_new_block(job_block):
             print("Mined block validation failed")
             return None
@@ -208,5 +210,3 @@ class Node(object):
                      miner_address="",
                      difficulty=self.block_chain.difficulty)
 
-    def broadcast_to_peers(self):
-        pass
