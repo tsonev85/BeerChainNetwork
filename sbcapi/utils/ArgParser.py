@@ -26,7 +26,7 @@ class ArgParser:
         if self.__args.debug is None:
             self.__args.debug = bool(cfg['node_debug'])
 
-        if self.__args.url is None:
+        if self.__args.faucet is None:
             self.__args.faucet = cfg['faucet_url']
 
         print(self.__args)
