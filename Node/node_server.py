@@ -2,7 +2,6 @@ from uuid import uuid4
 from flask import Flask, jsonify, request
 from sbcapi.model import *
 from sbcapi.utils import *
-from sbcapi.utils import ArgParser
 from sbcapi.threading.server_queue import *
 from sbcapi.utils import requests_util as r
 import threading
@@ -156,7 +155,8 @@ def add_transactions():
                                   sender_pub_key=tuple(int(x) for x in transaction['sender_pub_key']),
                                   sender_signature=tuple(int(x) for x in transaction['sender_signature']),
                                   date_created=float(transaction['date_created']),
-                                  transaction_hash=transaction['transaction_hash'])
+                                  transaction_hash=transaction['transaction_hash'],
+                                  faucet_transaction=transaction['faucet_transaction'])
         if node.add_to_pending_transactions(transaction):
             successfully_added.append(transaction)
         else:

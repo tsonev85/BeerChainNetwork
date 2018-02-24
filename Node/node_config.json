@@ -2,5 +2,5 @@
     "node_host":"127.0.0.1",
     "node_port":"5555",
     "node_debug":"True",
-    "faucet_url":""
+    "faucet_url":"http://localhost:7777"
 }

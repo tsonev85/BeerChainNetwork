@@ -21,7 +21,7 @@ class BeerChainJSONEncoder(JSONEncoder):
                 'miner_address': obj.miner_address,
                 'miner_hash': obj.miner_hash,
                 'block_hash': obj.block_hash,
-                'current_state_balances': obj.current_state_balances,
+                'current_state_balances': obj.current_state_balances
             }
         if isinstance(obj, Transaction):
             return {
@@ -37,6 +37,7 @@ class BeerChainJSONEncoder(JSONEncoder):
                 'date_added_to_block': obj.date_added_to_block,
                 'date_created': obj.date_created,
                 'transaction_hash': obj.transaction_hash,
+                'faucet_transaction': obj.faucet_transaction
             }
         return super(BeerChainJSONEncoder, self).default(obj)
 
@@ -84,5 +85,6 @@ def json_transaction_decoder(obj):
                            paid=obj['paid'],
                            date_added_to_block=obj['date_added_to_block'],
                            date_created=obj['date_created'],
-                           transaction_hash=obj['transaction_hash'])
+                           transaction_hash=obj['transaction_hash'],
+                           faucet_transaction=obj['faucet_transaction'])
     return obj

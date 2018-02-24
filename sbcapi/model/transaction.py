@@ -16,7 +16,8 @@ class Transaction(object):
                  fee_percent=5,
                  date_received=None,
                  date_added_to_block = None,
-                 transaction_hash=None):
+                 transaction_hash=None,
+                 faucet_transaction=None):
         """
         Constructor
         :param to_address: <str>
@@ -31,6 +32,7 @@ class Transaction(object):
         :param date_received: <float>
         :param date_added_to_block: <float>
         :param transaction_hash: <float>
+        :param faucet_transaction: <bool>
         """
         if from_address is None:
             from_address = CryptoUtils.generate_address(sender_pub_key)
@@ -48,6 +50,7 @@ class Transaction(object):
         self.paid = paid
         self.date_added_to_block = date_added_to_block
         self.date_created = date_created
+        self.faucet_transaction = faucet_transaction
         if transaction_hash is None:
             transaction_hash = self.calculate_transaction_hash()
         self.transaction_hash = transaction_hash

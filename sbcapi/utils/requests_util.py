@@ -1,7 +1,7 @@
 import requests as r
 import json
 from sbcapi.model import *
-from sbcapi.utils import *
+from sbcapi.utils.json_encoder import *
 
 
 HEADERS = {'content-type': 'application/json'}
@@ -153,4 +153,15 @@ def get_coins_from_faucet(faucet_url, to_address, amount=None):
     }
     url = faucet_url + "/send_coins"
     response = r.post(url, data=json.dumps(request_data), headers=HEADERS).content.decode()
+    return json.loads(response)
+
+
+def check_faucet_transaction(faucet_url, transaction):
+    transaction_data_to_check = {
+        "transaction_hash": transaction.transaction_hash,
+        "sender_signature": transaction.sender_signature,
+        "sender_pub_key": transaction.sender_pub_key
+    }
+    url = faucet_url + "/check_transaction"
+    response = r.post(url, data=json.dumps(transaction_data_to_check), headers=HEADERS).content.decode()
     return json.loads(response)
