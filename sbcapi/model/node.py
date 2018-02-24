@@ -82,18 +82,24 @@ class Node(object):
         with self.block_chain_lock:
             return self.block_chain
 
-    def add_new_block(self, new_block):
+    def add_new_block(self, new_block, position=None):
         """
         Validates and adds new block to block chain
         :param new_block: <Block> New block
         :return: <bool> result of operation
         """
-        if not Block.is_block_valid(new_block, self.block_chain.blocks[-1]):
+        index = -1
+        if position is not None:
+            index = position
+        if not Block.is_block_valid(new_block, self.block_chain.blocks[index]):
             print("New block is not valid")
             return False
         self.confirm_mined_transactions(new_block)
         with self.block_chain_lock:
-            self.block_chain.blocks.append(new_block)
+            if position is None:
+                self.block_chain.blocks.append(new_block)
+            else:
+                self.block_chain.blocks[index] = new_block
             if not BlockChain.valid_chain(self.block_chain):
                 print("Blockchain became invalid after add of new block")
                 return False

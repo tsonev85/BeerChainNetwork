@@ -4,6 +4,7 @@ from sbcapi.model import *
 from sbcapi.utils import *
 from sbcapi.utils import ArgParser
 from sbcapi.threading.server_queue import *
+from sbcapi.utils import requests_util as r
 import threading
 
 
@@ -39,18 +40,15 @@ def add_new_block():
     if not all(k in values for k in required):
         return 'Missing values', 400
     new_block = values['block']
-    required_for_new_block = ['']
+    required_for_new_block = Block.get_required_fields()
     if not all(k in new_block for k in required_for_new_block):
         return 'Missing required values for new block creation', 400
-    new_block = Block()
+    new_block = json_block_decoder(new_block)
     # TODO check if exists, add validation etc. (DO NOT use node.add_new_block(new_block))
-    # if not node.add_new_block(new_block):
-    #     return 'Block validation failed. Block NOT added to block chain', 400
+    if not node.add_new_block(new_block):
+        return 'Block validation failed. Block NOT added to block chain', 400
     # broadcast to all except sender
-    return jsonify({
-        "result": "Block successfully added",
-        "block": new_block
-    }), 200
+    return "Block successfully added", 200
 
 
 @app.route('/chain', methods=["GET"])
@@ -204,6 +202,7 @@ def receive_mining_job():
         mined_block = node.add_block_from_miner(values)
         if mined_block is None:
             return 'Mined block validation error', 400
+        get_coins_from_faucet("http://localhost:7777", mined_block.minerAddress, 5)
         task_queue.put_task(broadcast_newly_mined_block, (node, mined_block))
         return 'Mined block successfully added.', 200
 
@@ -227,7 +226,7 @@ def blockchain_sync_timer():
     Puts blockchain_sync task in the queue on set interval
     """
     while True:
-        task_queue.put_task(blockchain_sync, node)
+        task_queue.put_task(blockchain_sync, [node])
         time.sleep(15)
 
 
@@ -241,7 +240,7 @@ def blockchain_sync(node):
             best_block = None
             for peer_data in node.get_peers():
                 peer = peer_data['peer']
-                block = get_last_block(peer)
+                block = r.get_last_block(peer)
                 if block.index > node.get_blockchain().blocks[-1].index:
                     if best_block is None:
                         best_block = block
@@ -250,20 +249,28 @@ def blockchain_sync(node):
                         best_block = block
                         peer_to_sync_with = peer
 
+            if peer_to_sync_with is None:
+                return
+
             starting_block = None
-            i = -1
+            i = len(node.get_blockchain().blocks) - 1
             while starting_block is None:
-                starting_block = get_block_by_hash(peer_to_sync_with, node.get_blockchain().blocks[i].miner_hash)
+                starting_block = r.get_block_by_hash(peer_to_sync_with, node.get_blockchain().blocks[i].miner_hash)
                 i -= 1
+                if i == 0:
+                    break;
+
+            if starting_block is None:
+                return;
 
             from_index = starting_block.index
             to_index = int(from_index) + 50
             while True:
-                blocks_to_add = get_blocks_range(peer_to_sync_with, from_index, to_index)
+                blocks_to_add = r.get_blocks_range(peer_to_sync_with, from_index, to_index)
                 if len(blocks_to_add) == 0:
                     break
                 for block in blocks_to_add:
-                    node.add_new_block(block)
+                    node.add_new_block(block, block.index)
                 from_index = to_index
                 to_index += 50
 
@@ -276,9 +283,9 @@ if __name__ == '__main__':
     flask_starter = threading.Thread(name="Flask_Runner_Thread", target=flask_runner, args=[port])
     flask_starter.start()
     # tested with 2 nodes, but still needs testing before live
-    # peers_list_syncer = threading.Thread(name="Peer_Sync_Thread", target=peers_list_sync)
-    # peers_list_syncer.start()
+    peers_list_syncer = threading.Thread(name="Peer_Sync_Thread", target=peers_list_sync)
+    peers_list_syncer.start()
     #
     # Not tested yet, better stay commented
-    # blockchain_synchronizer = threading.Thread(name="Blockchain_Sync_Thread", target=blockchain_sync_timer)
-    # blockchain_synchronizer.start()
+    blockchain_synchronizer = threading.Thread(name="Blockchain_Sync_Thread", target=blockchain_sync_timer)
+    blockchain_synchronizer.start()

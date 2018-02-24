@@ -49,6 +49,12 @@ class Block(object):
         self.block_hash = block_hash
 
     @staticmethod
+    def get_required_fields():
+        return ['index', 'prev_block_hash', 'date_created', 'miner_name',
+                'miner_address', 'difficulty', 'transactions', 'nonce',
+                'miner_hash', 'block_hash'];
+
+    @staticmethod
     def calculate_transactions_hash(block):
         """
         Returns hash of block transactions.
@@ -128,4 +134,3 @@ class Block(object):
             if not transaction.paid:
                 unpaid_transactions.append(transaction)
         return unpaid_transactions
-

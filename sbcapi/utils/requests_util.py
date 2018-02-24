@@ -78,10 +78,10 @@ def sync_peers(node, new_peers):
     :param new_peers: [<dict>]
     """
     for new_peer in new_peers:
-        url = new_peer + "/peers"
-        add_me_url = new_peer + "/add_peer"
+        url = new_peer['peer'] + "/peers"
+        add_me_url = new_peer['peer'] + "/add_peer"
         my_id = json.dumps({
-            "peer": "http://127.0.0.1",
+            "peer": "http://127.0.0.1:5555",
             "node_identifier": node.node_identifier
         })
         try:

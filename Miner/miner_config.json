@@ -1,6 +1,6 @@
 {
     "miner_name":"Test_Miner_1",
-    "node_address":"Node_Address",
-    "payment_address":"My_Address",
+    "node_address":"http://127.0.0.1:5555/",
+    "payment_address":"e817ae7286232137c82e8e09274ee02892e8e079",
     "num_parallel_job":"4"
 }
