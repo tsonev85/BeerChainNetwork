@@ -1,28 +1,18 @@
-from sbcapi.model import *
+from Wallet.wallet import *
 
-
-
-transaction = Transaction(
-    date_added_to_block=time.time(),
-    to_address="neshto si",
-    value=0,
-    sender_pub_key="fgjdjjdj",
-    sender_signature="hhtht",
-    mined_in_block_index=0
-)
-
-prev_block = Block(index=1,
-                   prev_block_hash="aafaf",
-                   date_created=99,
-                   transactions=[transaction],
-                   miner_name="0")
-prev_block.miner_hash = "aaaa"
-
-new_block = Block(index=2,
-                  prev_block_hash=prev_block.block_hash,
-                  date_created=99,
-                  transactions=[transaction],
-                  miner_name="0")
-new_block.miner_hash='aaaa'
-# print(prev_block.calculate_transactions_hash())
-print(Block.is_block_valid(new_block,prev_block))
+w = Wallet()
+w.generate_address_randomKey()
+w.generate_address("umpalumpa")
+it = iter(w.addresses)
+from_address, to_address = next(it), next(it)
+w.get_coins_from_faucet(from_address)
+# transaction has to be mined before update of balances
+w.update_balances()
+result, reason, transactions = w.generate_transaction(from_address, to_address, 5)
+if result:
+    send_result, transaction_hash = w.send_transactions(transactions)
+    if send_result:
+        print(transaction_hash)
+# transaction has to be mined before update of balances
+w.update_balances()
+print("success")

@@ -120,3 +120,37 @@ def broadcast_newly_mined_block(node, mined_block):
             r.post(url, data=json.dumps(mined_block), HEADERS=HEADERS)
     except Exception as ex:
         print("Broadcasting to [ " + p + " ] went wrong" + str(ex))
+
+
+def send_transactions(peer, transactions):
+    """
+    Sends transactions to be added to pending transactions in the node
+    :param peer: <str>
+    :param transactions: <Transaction[]>
+    :return: <dict> response
+    """
+    url = peer + "/add_transactions"
+    request_data = {
+        "transactions": transactions
+    }
+    response = r.post(url, data=json.dumps(request_data, cls=BeerChainJSONEncoder), headers=HEADERS).content.decode()
+    return json.loads(response, object_hook=json_block_decoder)
+
+
+def get_coins_from_faucet(faucet_url, to_address, amount=None):
+    """
+    Orders the faucet to send coins to the provided address.
+    Faucet will send a transaction that will be added to pending transactions
+    of the node it is connected to.
+    :param faucet_url: <str> Faucet url
+    :param to_address: <str> Coins will be send to this address
+    :param amount: <int> amount of coins to request, if empty default amount will be send
+    :return: <dict> response
+    """
+    request_data = {
+        "to_address": str(to_address),
+        "amount": amount
+    }
+    url = faucet_url + "/send_coins"
+    response = r.post(url, data=json.dumps(request_data), headers=HEADERS).content.decode()
+    return json.loads(response)
