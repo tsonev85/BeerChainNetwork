@@ -107,7 +107,7 @@ def add_peer():
     if not all(k in values for k in required):
         return 'Missing values', 400
 
-    if values['peer'] == node_identifier:
+    if values['node_identifier'] == node_identifier:
         return 'Cant add itself', 400
 
     existing_peer = next((peer for peer in node.get_peers() if peer['peer'] == values['peer']), None)
@@ -207,8 +207,8 @@ def receive_mining_job():
         return 'Mined block successfully added.', 200
 
 
-def flask_runner(port):
-    app.run(threaded=True, host='127.0.0.1', port=port)
+def flask_runner(host, port):
+    app.run(threaded=True, host=host, port=port)
 
 
 def peers_list_sync():
@@ -279,9 +279,11 @@ def blockchain_sync(node):
 
 
 if __name__ == '__main__':
+    host = ArgParser.get_args().url
     port = ArgParser.get_args().port
-    flask_starter = threading.Thread(name="Flask_Runner_Thread", target=flask_runner, args=[port])
+    flask_starter = threading.Thread(name="Flask_Runner_Thread", target=flask_runner, args=[host, port])
     flask_starter.start()
+    print("Node Identifier: " + node_identifier)
     # tested with 2 nodes, but still needs testing before live
     peers_list_syncer = threading.Thread(name="Peer_Sync_Thread", target=peers_list_sync)
     peers_list_syncer.start()

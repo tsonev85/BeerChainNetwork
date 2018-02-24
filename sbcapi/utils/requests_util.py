@@ -1,7 +1,8 @@
 import requests as r
 import json
 from sbcapi.model import *
-from sbcapi.utils import *
+from sbcapi.utils.json_encoder import *
+from sbcapi.utils.ArgParser import *
 
 
 HEADERS = {'content-type': 'application/json'}
@@ -81,7 +82,7 @@ def sync_peers(node, new_peers):
         url = new_peer['peer'] + "/peers"
         add_me_url = new_peer['peer'] + "/add_peer"
         my_id = json.dumps({
-            "peer": "http://127.0.0.1:5555",
+            "peer": "http://" + ArgParser.get_args().url + ":" + str(ArgParser.get_args().port),
             "node_identifier": node.node_identifier
         })
         try:
@@ -93,7 +94,7 @@ def sync_peers(node, new_peers):
             for peer in peers:
                 _p = peer['peer']
                 _id = peer['node_identifier']
-                if _p == node.node_identifier:
+                if _id == node.node_identifier:
                     continue
                 existing_peer = next((p for p in node.get_peers() if p['peer'] == _p), None)
                 if existing_peer:
