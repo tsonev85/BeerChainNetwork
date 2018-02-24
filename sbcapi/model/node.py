@@ -228,6 +228,7 @@ class Node(object):
         if transaction.faucet_transaction is None or transaction.faucet_transaction is False:
             return False
         else:
+            # TODO needs testing
             # r.check_faucet_transaction(ArgParser.get_args().faucet, transaction)
             return True
 

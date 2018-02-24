@@ -157,6 +157,12 @@ def get_coins_from_faucet(faucet_url, to_address, amount=None):
 
 
 def check_faucet_transaction(faucet_url, transaction):
+    """
+    Checks if transaction was indeed sent from faucet
+    :param faucet_url: <str>
+    :param transaction: <Transaction>
+    :return: TODO
+    """
     transaction_data_to_check = {
         "transaction_hash": transaction.transaction_hash,
         "sender_signature": transaction.sender_signature,
@@ -164,4 +170,5 @@ def check_faucet_transaction(faucet_url, transaction):
     }
     url = faucet_url + "/check_transaction"
     response = r.post(url, data=json.dumps(transaction_data_to_check), headers=HEADERS).content.decode()
+    # TODO Need tests
     return json.loads(response)

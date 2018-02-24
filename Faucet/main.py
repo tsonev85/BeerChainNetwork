@@ -39,4 +39,27 @@ def send_coins():
         }), 400
 
 
+@app.route('/check_transaction', methods=['POST'])
+def check_transaction():
+    values = request.get_json()
+    required = ['transaction_hash', 'sender_signature', 'sender_pub_key']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+    # sender_pub_key = tuple(int(x) for x in transaction['sender_pub_key']),
+    # sender_signature = tuple(int(x) for x in transaction['sender_signature']),
+    pub_key = tuple(int(x) for x in values['sender_pub_key'])
+    transaction_hash = values['transaction_hash']
+    signature = tuple(int(x) for x in values['sender_signature'])
+    if faucet.validate_transaction(pub_key, transaction_hash, signature):
+        return jsonify({
+            'result': True,
+            'msg': 'Transaction is valid'
+        }), 200
+    else:
+        return jsonify({
+            'result': False,
+            'msg': 'Transaction validation error'
+        }), 400
+
+
 app.run(host=faucet.config['default_host'], port=int(faucet.config['default_port']))
