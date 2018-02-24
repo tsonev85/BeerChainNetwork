@@ -44,9 +44,7 @@ class CryptoUtils(object):
         :param data: object/str/hash that represent the data in the transaction
         :return: <tuple<int,int>>
         """
-        data_hash = CryptoUtils.keccak_hash(data)
-        signature = sign(generator_secp256k1, private_key, data_hash)
-
+        signature = sign(generator_secp256k1, int(private_key, 16), data)
         return signature
 
     @staticmethod
