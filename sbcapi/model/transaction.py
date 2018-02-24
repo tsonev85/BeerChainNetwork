@@ -69,7 +69,7 @@ class Transaction(object):
         Sign transaction using owner's private and transaction data hash
         :param private_key: <str> Owner's private key
         """
-        self.sender_pub_key = CryptoUtils.sign_transaction(private_key, self.transaction_hash)
+        self.sender_signature = CryptoUtils.sign_transaction(private_key, self.transaction_hash)
 
     def is_transaction_valid(self):
         """

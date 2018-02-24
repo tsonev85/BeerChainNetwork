@@ -31,12 +31,12 @@ class Wallet(object):
         Generates address from the provided private_key
         :param private_key: <str>
         """
-        private_key_to_hex = binascii.hexlify(private_key.encode())
+        private_key_to_hex = CryptoUtils.generate_private_key(private_key)
         public_key = CryptoUtils.generate_public_key(private_key_to_hex)
         public_key_compressed = CryptoUtils.compress_public_key(public_key)
         address = CryptoUtils.generate_address(public_key)
         self.addresses[address] = {
-            'private_key': private_key,
+            'private_key': private_key_to_hex,
             'public_key': public_key,
             'public_key_compressed': public_key_compressed,
             'balance': 0
