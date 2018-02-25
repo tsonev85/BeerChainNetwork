@@ -2,7 +2,7 @@ import requests as r
 import json
 from sbcapi.model import *
 from sbcapi.utils.json_encoder import *
-from sbcapi.utils.ArgParser import *
+from sbcapi.utils.argument_parser import *
 
 
 HEADERS = {'content-type': 'application/json'}
@@ -115,10 +115,15 @@ def broadcast_newly_mined_block(node, mined_block):
     :param node: <Node>
     :param mined_block: <Block>
     """
+    data = {
+        "block": mined_block,
+        "node_identifier": node.node_identifier
+    }
     try:
         for p in node.peers:
             url = p['peer'] + "/add_new_block"
-            r.post(url, data=json.dumps(mined_block), HEADERS=HEADERS)
+
+            r.post(url, data=json.dumps(data, cls=BeerChainJSONEncoder), headers=HEADERS)
     except Exception as ex:
         print("Broadcasting to [ " + p + " ] went wrong" + str(ex))
 
@@ -154,4 +159,22 @@ def get_coins_from_faucet(faucet_url, to_address, amount=None):
     }
     url = faucet_url + "/send_coins"
     response = r.post(url, data=json.dumps(request_data), headers=HEADERS).content.decode()
+    return json.loads(response)
+
+
+def check_faucet_transaction(faucet_url, transaction):
+    """
+    Checks if transaction was indeed sent from faucet
+    :param faucet_url: <str>
+    :param transaction: <Transaction>
+    :return: TODO
+    """
+    transaction_data_to_check = {
+        "transaction_hash": transaction.transaction_hash,
+        "sender_signature": transaction.sender_signature,
+        "sender_pub_key": transaction.sender_pub_key
+    }
+    url = faucet_url + "/check_transaction"
+    response = r.post(url, data=json.dumps(transaction_data_to_check), headers=HEADERS).content.decode()
+    # TODO Need tests
     return json.loads(response)

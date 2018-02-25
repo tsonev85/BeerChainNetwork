@@ -2,7 +2,6 @@ from uuid import uuid4
 from flask import Flask, jsonify, request
 from sbcapi.model import *
 from sbcapi.utils import *
-from sbcapi.utils import ArgParser
 from sbcapi.threading.server_queue import *
 from sbcapi.utils import requests_util as r
 import threading
@@ -33,10 +32,9 @@ def node_info():
 
 @app.route('/add_new_block', methods=['POST'])
 def add_new_block():
-    # TODO
     values = request.get_json()
     # Check that the required fields are in the POSTed data
-    required = ['block']
+    required = ['block', 'node_identifier']
     if not all(k in values for k in required):
         return 'Missing values', 400
     new_block = values['block']
@@ -44,10 +42,8 @@ def add_new_block():
     if not all(k in new_block for k in required_for_new_block):
         return 'Missing required values for new block creation', 400
     new_block = json_block_decoder(new_block)
-    # TODO check if exists, add validation etc. (DO NOT use node.add_new_block(new_block))
     if not node.add_new_block(new_block):
         return 'Block validation failed. Block NOT added to block chain', 400
-    # broadcast to all except sender
     return "Block successfully added", 200
 
 
@@ -156,7 +152,8 @@ def add_transactions():
                                   sender_pub_key=tuple(int(x) for x in transaction['sender_pub_key']),
                                   sender_signature=tuple(int(x) for x in transaction['sender_signature']),
                                   date_created=float(transaction['date_created']),
-                                  transaction_hash=transaction['transaction_hash'])
+                                  transaction_hash=transaction['transaction_hash'],
+                                  faucet_transaction=transaction['faucet_transaction'])
         if node.add_to_pending_transactions(transaction):
             successfully_added.append(transaction)
         else:
@@ -202,7 +199,7 @@ def receive_mining_job():
         mined_block = node.add_block_from_miner(values)
         if mined_block is None:
             return 'Mined block validation error', 400
-        get_coins_from_faucet("http://localhost:7777", mined_block.minerAddress, 5)
+        # get_coins_from_faucet("http://localhost:7777", mined_block.minerAddress, 5)
         task_queue.put_task(broadcast_newly_mined_block, (node, mined_block))
         return 'Mined block successfully added.', 200
 
@@ -257,13 +254,15 @@ def blockchain_sync(node):
             while starting_block is None:
                 starting_block = r.get_block_by_hash(peer_to_sync_with, node.get_blockchain().blocks[i].miner_hash)
                 i -= 1
-                if i == 0:
+                if i < 0:
                     break;
 
             if starting_block is None:
                 return;
 
             from_index = starting_block.index
+            if from_index == 0:
+                from_index = 1
             to_index = int(from_index) + 50
             while True:
                 blocks_to_add = r.get_blocks_range(peer_to_sync_with, from_index, to_index)
@@ -271,11 +270,27 @@ def blockchain_sync(node):
                     break
                 for block in blocks_to_add:
                     node.add_new_block(block, block.index)
+
                 from_index = to_index
                 to_index += 50
 
         except Exception as ex:
             print("Something went wrong while trying to sync the blockchain: " + str(ex))
+
+
+def initialPeerSync(node, initial_peers):
+    """
+    If there are peers set up in the node_config.json file, makes initial sync with them on server start up
+    :param node: <Node>
+    :param initial_peers: [<dict>]
+    """
+    for p in initial_peers:
+        new_peer = {
+            "peer": p['peer'],
+            "node_identifier": p['node_identifier']
+        }
+        node.add_peer(new_peer)
+    task_queue.put_task(sync_peers, (node, node.get_peers()))
 
 
 if __name__ == '__main__':
@@ -284,10 +299,16 @@ if __name__ == '__main__':
     flask_starter = threading.Thread(name="Flask_Runner_Thread", target=flask_runner, args=[host, port])
     flask_starter.start()
     print("Node Identifier: " + node_identifier)
-    # tested with 2 nodes, but still needs testing before live
+
+    try:
+        initialPeerSync(node, ArgParser.get_args().peers)
+    except Exception as ex:
+        print("No initial peers list")
+
     peers_list_syncer = threading.Thread(name="Peer_Sync_Thread", target=peers_list_sync)
+    peers_list_syncer.setDaemon(True)
     peers_list_syncer.start()
-    #
-    # Not tested yet, better stay commented
+
     blockchain_synchronizer = threading.Thread(name="Blockchain_Sync_Thread", target=blockchain_sync_timer)
+    blockchain_synchronizer.setDaemon(True);
     blockchain_synchronizer.start()

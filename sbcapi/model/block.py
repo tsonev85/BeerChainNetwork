@@ -1,5 +1,5 @@
 from sbcapi.utils import *
-from sbcapi.utils.ArgParser import *
+from sbcapi.utils.argument_parser import *
 
 
 class Block(object):

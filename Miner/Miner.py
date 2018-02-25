@@ -6,6 +6,7 @@ from sbcapi.threading import AtomicCounter, AtomicBoolean
 
 class Miner(object):
     job_finished = False
+
     def __init__(self):
         self.miner_name = None
         self.node_address = None
@@ -18,6 +19,7 @@ class Miner(object):
         self.nonce = AtomicCounter(0,self.step)
         #self.job_finished = AtomicBoolean()
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=self.parallel_jobs)
+        self.schedule_executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         self.workers = []
         self.difficulty = ""
         self.hash_to_mine = ""
@@ -60,12 +62,12 @@ class Miner(object):
             current_nonce_range = self.nonce.incrementAndGet()
             for current_nonce in range(current_nonce_range-self.step, current_nonce_range):
                 if Miner.job_finished:
-                    print(threading.current_thread().getName(), " ", str(current_nonce))
+                    # print(threading.current_thread().getName(), " ", str(current_nonce)) #left for debug purposes
                     break
                 hash = CryptoUtils.calc_miner_hash(self.hash_to_mine, current_nonce)
-                #print(threading.current_thread().getName(), " CHECKING =>> ", hash, " ", current_nonce) #left for debug purposes
+                # print(threading.current_thread().getName(), " CHECKING =>> ", hash, " ", current_nonce) #left for debug purposes
                 if hash[:len(self.difficulty)] == self.difficulty:
-                    #self.job_finished.compareAndSet(False, True)
+                    # self.job_finished.compareAndSet(False, True)
                     Miner.job_finished = True
                     self.submit_result({
                         'miner_name': self.miner_name,
@@ -82,9 +84,10 @@ class Miner(object):
         :param <dict> result:
         :return:
         """
-        print(str(time.time()), " ", result)
+        print(threading.current_thread().getName(), " => ", str(time.time()), " ", result)
         headers = {'content-type': 'application/json'}
         resp = req.post("http://localhost:5555/heres_beer", data=json.dumps(result), headers=headers)
+        self.schedule_executor.submit(self.schedule)
 
     def acquire_job(self):
         """
@@ -120,19 +123,19 @@ class Miner(object):
         Creates new threads to mine the hash, based on the parallel configuration
         :return:
         """
-        self.job_finished = True
+        Miner.job_finished = True
         if len(self.workers) == 0:
-            self.job_finished = False
+            Miner.job_finished = False
             self.nonce.reset()
         else:
             while len(self.workers) != 0:
-                print("Waiting for: ", self.workers)
+                # print("Waiting for: ", self.workers) #left for debug purposes
                 for future in self.workers:
-                    print("Future: ", future.done())
+                    # print("Future: ", future.done()) #left for debug purposes
                     if future.done():
                         self.workers.remove(future)
 
-            self.job_finished = False
+            Miner.job_finished = False
             self.nonce.reset()
 
         for i in range(0, self.parallel_jobs):
@@ -146,22 +149,29 @@ class Miner(object):
         Starts the scheduling.
         :return:
         """
-        thread = threading.Thread(target=self.schedule)
+        thread = threading.Thread(target=self.schedule_loop)
         thread.start()
 
-    def schedule(self):
+    def schedule_loop(self):
         """
         Scheduling a thread to check for new job every xx seconds.
         :return:
         """
         while True:
-            new_job_aquired = self.acquire_job()
-            if new_job_aquired:
-                print(str(time.time()) + " New job aquired! Hash: " + self.hash_to_mine)
-                self.run_job()
-            else:
-                print("No new job aquired... Rescheduling... ")
+            self.schedule_executor.submit(self.schedule())
             time.sleep(10)
+
+    def schedule(self):
+        """
+        Checks for a new job and starts the workers if new job present.
+        :return:
+        """
+        new_job_aquired = self.acquire_job()
+        if new_job_aquired:
+            print(str(time.time()) + " New job aquired! Hash: " + self.hash_to_mine)
+            self.run_job()
+        else:
+            print("No new job aquired... Rescheduling... ")
 
     def set_hash_to_mine(self, hash_to_mine):
         """

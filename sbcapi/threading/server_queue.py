@@ -11,6 +11,7 @@ class ServerTaskQueue:
 
         for i in range(workers_size):
             t = threading.Thread(name="ServerTaskQueue_Thread_"+str(i), target=self.execute_task)
+            t.setDaemon(True);
             t.start()
             self.threads.append(t)
 

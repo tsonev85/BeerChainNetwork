@@ -1,5 +1,6 @@
 from sbcapi.model import *
-from sbcapi.utils.ArgParser import *
+from sbcapi.utils import *
+# from sbcapi.utils import requests_util as r
 from sbcapi.threading import *
 import copy
 
@@ -67,8 +68,12 @@ class Node(object):
         if not transaction.is_transaction_valid():
             print("Transaction is not valid.")
             return False
-        if not self.check_balance(transaction.from_address, transaction.value):
-            return False
+        # Check if transaction is from faucet
+        if self.faucet_transaction(transaction):
+            print("Faucet transaction, skipping balance check")
+        else:
+            if not self.check_balance(transaction.from_address, transaction.value):
+                return False
         if not self.new_block:
             self.new_block = self.get_new_block()
         self.new_block.transactions.append(transaction)
@@ -90,7 +95,11 @@ class Node(object):
         """
         index = -1
         if position is not None:
-            index = position
+            if (self.block_chain.blocks[index].index + 1) == position:
+                position = None
+            else:
+                index = position
+
         if not Block.is_block_valid(new_block, self.block_chain.blocks[index]):
             print("New block is not valid")
             return False
@@ -167,8 +176,9 @@ class Node(object):
             # we assume all validation and balance checks have been passed since this is already mined block
             new_block.current_state_balances[receiver_address] = \
                 new_block.current_state_balances.get(receiver_address, 0) + value
-            new_block.current_state_balances[sender_address] = \
-                new_block.current_state_balances.get(sender_address, 0) - value
+            if not self.faucet_transaction(transaction):
+                new_block.current_state_balances[sender_address] = \
+                    new_block.current_state_balances.get(sender_address, 0) - value
 
     def check_balance(self, address, value):
         """
@@ -216,4 +226,13 @@ class Node(object):
                      miner_name="",
                      miner_address="",
                      difficulty=self.block_chain.difficulty)
+
+    @staticmethod
+    def faucet_transaction(transaction):
+        if transaction.faucet_transaction is None or transaction.faucet_transaction is False:
+            return False
+        else:
+            # TODO needs testing
+            # r.check_faucet_transaction(ArgParser.get_args().faucet, transaction)
+            return True
 

@@ -1,6 +1,5 @@
 {
   "node_url": "http://localhost:5555",
-  "max_avail": 1000000,
   "coins_to_send": 10,
   "default_host": "localhost",
   "default_port": "7777"

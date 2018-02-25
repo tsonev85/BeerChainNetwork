@@ -24,10 +24,19 @@ class ArgParser:
             self.__args.port = int(cfg['node_port'])
 
         if self.__args.debug is None:
-            self.__args.debug = bool(cfg['node_debug'])
+            self.__args.debug = str2bool(cfg['node_debug'])
 
         if self.__args.faucet is None:
             self.__args.faucet = cfg['faucet_url']
+
+        peers_list_cfg = cfg['peers_list']
+        peers_list = []
+        for peer in peers_list_cfg:
+            if len(peer['peer']) > 1 and len(peer['node_identifier']) > 1:
+                peers_list.append(peer)
+
+        if len(peers_list) > 0:
+            self.__args.peers = peers_list
 
         print(self.__args)
 
