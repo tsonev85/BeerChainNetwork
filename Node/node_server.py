@@ -199,10 +199,16 @@ def receive_mining_job():
         mined_block = node.add_block_from_miner(values)
         if mined_block is None:
             return 'Mined block validation error', 400
-        # get_coins_from_faucet("http://localhost:7777", mined_block.minerAddress, 5)
+        award_miner()
         task_queue.put_task(broadcast_newly_mined_block, (node, mined_block))
         return 'Mined block successfully added.', 200
 
+
+def award_miner(mined_block):
+    try:
+        get_coins_from_faucet(ArgParser.get_args().faucet, mined_block.minerAddress, 5)
+    except Exception:
+        pass
 
 def flask_runner(host, port):
     app.run(threaded=True, host=host, port=port)
