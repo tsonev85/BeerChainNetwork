@@ -52,7 +52,7 @@ class Faucet:
                                       faucet_transaction=True)
         self.sign_transaction(new_transaction)
         transactions.append(new_transaction)
-        self.sent_transactions[new_transaction.transaction_hash]
+        # self.sent_transactions[new_transaction.transaction_hash]
         return transactions
 
 
