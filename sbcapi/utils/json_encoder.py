@@ -24,19 +24,20 @@ class BeerChainJSONEncoder(JSONEncoder):
                 'current_state_balances': obj.current_state_balances
             }
         if isinstance(obj, Transaction):
+
             return {
                 'from_address': obj.from_address,
                 'to_address': obj.to_address,
                 'value': obj.value,
                 'fee_percent': obj.fee_percent,
-                'sender_pub_key': obj.sender_pub_key,
-                'sender_signature': obj.sender_signature,
+                'sender_pub_key': str(obj.sender_pub_key),
+                'sender_signature': str(obj.sender_signature),
                 'date_received': obj.date_received,
                 'mined_in_block_index': obj.mined_in_block_index,
                 'paid': obj.paid,
                 'date_added_to_block': obj.date_added_to_block,
                 'date_created': obj.date_created,
-                'transaction_hash': obj.transaction_hash,
+                'transaction_hash': str(obj.transaction_hash),
                 'faucet_transaction': obj.faucet_transaction
             }
         return super(BeerChainJSONEncoder, self).default(obj)

@@ -105,7 +105,7 @@ def get_transaction_by_hash():
     if not all(k in values for k in required):
         return 'Missing values', 400
     # return None if nothing found
-    requested_hash = values['hash'];
+    requested_hash = int(values['hash']);
     for t in node.new_block.transactions:
         if requested_hash == t.transaction_hash:
             return jsonify(t), 200
@@ -169,13 +169,15 @@ def add_transactions():
         if not all(k in transaction for k in required_for_transaction):
             failed_transactions.append(transaction)
             continue
+        sender_pub_key = str(transaction['sender_pub_key'])[1:-1].split(",")
+        sender_signature = str(transaction['sender_signature'])[1:-1].split(",")
         transaction = Transaction(from_address=transaction['from_address'],
                                   to_address=transaction['to_address'],
                                   value=int(transaction['value']),
-                                  sender_pub_key=tuple(int(x) for x in transaction['sender_pub_key']),
-                                  sender_signature=tuple(int(x) for x in transaction['sender_signature']),
+                                  sender_pub_key=tuple(int(x) for x in sender_pub_key),
+                                  sender_signature=tuple(int(x) for x in sender_signature),
                                   date_created=float(transaction['date_created']),
-                                  transaction_hash=transaction['transaction_hash'],
+                                  transaction_hash=int(transaction['transaction_hash']),
                                   faucet_transaction=transaction['faucet_transaction'])
         if node.add_to_pending_transactions(transaction):
             successfully_added.append(transaction)
