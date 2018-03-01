@@ -31,12 +31,15 @@ class Wallet(object):
         Generates address from the provided private_key
         :param private_key: <str>
         """
-        private_key_to_hex = CryptoUtils.generate_private_key(private_key)
+        words, seed = CryptoUtils.create_mnemonic_key(private_key)
+        private_key_to_hex = CryptoUtils.generate_private_key(seed)
         public_key = CryptoUtils.generate_public_key(private_key_to_hex)
         public_key_compressed = CryptoUtils.compress_public_key(public_key)
         address = CryptoUtils.generate_address(public_key)
         self.addresses[address] = {
+            'owner_key': private_key,
             'private_key': private_key_to_hex,
+            'mnemonic_words': words,
             'public_key': public_key,
             'public_key_compressed': public_key_compressed,
             'balance': 0
@@ -67,9 +70,9 @@ class Wallet(object):
                 reason = "Insufficient balance. Transaction can not be completed."
                 print(reason)
                 return False, reason, transactions
-            new_transaction = Transaction(from_address=from_address,
-                                          to_address=to_address,
-                                          value=value,
+            new_transaction = Transaction(from_address=str(from_address),
+                                          to_address=str(to_address),
+                                          value=int(value),
                                           sender_pub_key=self.addresses[from_address]['public_key'],
                                           sender_signature="",
                                           date_created=time.time())
@@ -139,4 +142,4 @@ class Wallet(object):
         :param value: <int> Value to check
         :return: <bool> Result of operation
         """
-        return self.addresses[address]['balance'] >= value
+        return int(self.addresses[address]['balance']) >= int(value)
