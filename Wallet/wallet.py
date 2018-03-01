@@ -142,5 +142,4 @@ class Wallet(object):
         :param value: <int> Value to check
         :return: <bool> Result of operation
         """
-        self.update_balances()
         return int(self.addresses[address]['balance']) >= int(value)
