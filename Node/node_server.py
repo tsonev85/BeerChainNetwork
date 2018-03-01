@@ -4,6 +4,7 @@ from sbcapi.model import *
 from sbcapi.utils import *
 from sbcapi.threading.server_queue import *
 from sbcapi.utils import requests_util as r
+from flask_cors import CORS
 import threading
 
 
@@ -88,11 +89,33 @@ def get_blocks_range():
     if not all(k in values for k in required):
         return 'Missing values', 400
     from_index = int(values['from_index'])
+    if values['to_index'] == "None":
+        return jsonify(node.get_blockchain().blocks[from_index:]), 200
     to_index = int(values['to_index'])
     range = to_index-from_index
     if range < 0 or range > 50:
         return 'Invalid range', 400
-    return jsonify(node.block_chain.blocks[from_index:to_index]), 200
+    return jsonify(node.get_blockchain().blocks[from_index:to_index]), 200
+
+
+@app.route('/get_transaction_by_hash', methods=['POST'])
+def get_transaction_by_hash():
+    values = request.get_json()
+    required = ['hash']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+    # return None if nothing found
+    requested_hash = values['hash'];
+    for t in node.new_block.transactions:
+        if requested_hash == t.transaction_hash:
+            return jsonify(t), 200
+
+    for block in node.get_blockchain().blocks:
+        for t in block.transactions:
+            if requested_hash == t.transaction_hash:
+                return jsonify(t), 200
+
+    return jsonify({}), 200
 
 
 @app.route('/add_peer', methods=['POST'])
@@ -210,7 +233,9 @@ def award_miner(mined_block):
     except Exception:
         pass
 
+
 def flask_runner(host, port):
+    CORS(app)
     app.run(threaded=True, host=host, port=port)
 
 
@@ -313,8 +338,8 @@ if __name__ == '__main__':
 
     peers_list_syncer = threading.Thread(name="Peer_Sync_Thread", target=peers_list_sync)
     peers_list_syncer.setDaemon(True)
-    peers_list_syncer.start()
+    # peers_list_syncer.start()
 
     blockchain_synchronizer = threading.Thread(name="Blockchain_Sync_Thread", target=blockchain_sync_timer)
     blockchain_synchronizer.setDaemon(True);
-    blockchain_synchronizer.start()
+    # blockchain_synchronizer.start()

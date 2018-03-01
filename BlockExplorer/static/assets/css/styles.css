@@ -1,0 +1,46 @@
+div.header_content{
+  border-bottom:1px solid #eee;
+}
+
+div.page-header{
+  margin-left:20px;
+  margin-right:20px;
+}
+
+img.logo{
+  height:42px;
+  width:42px;
+}
+
+h1.company_name_logo{
+  display:inline-block;
+  cursor:pointer;
+}
+
+div.dropdown{
+  display:inline-block;
+  margin:5px;
+}
+
+div.search_form{
+  float:right;
+  display:inline-block;
+  margin-top:20px;
+}
+
+input.search_field{
+  width:500px;
+  height:35px;
+  margin:5px;
+  border-radius:5px;
+}
+
+button.btn.btn-default{
+  margin:5px;
+}
+
+select.selection{
+  height:35px;
+  border-radius:5px;
+}
+

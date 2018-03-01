@@ -158,6 +158,7 @@ class Node(object):
                 if unpaid_transaction.transaction_hash == transaction.transaction_hash:
                     self.new_block.transactions.remove(unpaid_transaction)
                     transaction.paid = True
+                    transaction.mined_in_block_index = block.index
 
     def remove_transaction(self):
         # TODO
