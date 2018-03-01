@@ -14,7 +14,6 @@ def faucet_info():
     response = {
         'faucet_address': faucet.faucet_address,
         'connected_to_node': faucet.config['node_url'],
-        'max_avail': faucet.config['max_avail'],
         'default_coins_to_send': faucet.config['coins_to_send']
     }
     return jsonify(response), 200
@@ -62,4 +61,6 @@ def check_transaction():
         }), 400
 
 
-app.run(host=faucet.config['default_host'], port=int(faucet.config['default_port']))
+if __name__ == '__main__':
+
+    app.run(host=faucet.config['default_host'], port=int(faucet.config['default_port']))

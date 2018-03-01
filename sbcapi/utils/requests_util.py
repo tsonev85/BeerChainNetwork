@@ -140,7 +140,7 @@ def send_transactions(peer, transactions):
         "transactions": transactions
     }
     response = r.post(url, data=json.dumps(request_data, cls=BeerChainJSONEncoder), headers=HEADERS).content.decode()
-    return json.loads(response, object_hook=json_block_decoder)
+    return json.loads(response)
 
 
 def get_coins_from_faucet(faucet_url, to_address, amount=None):

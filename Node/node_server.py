@@ -222,7 +222,7 @@ def receive_mining_job():
         mined_block = node.add_block_from_miner(values)
         if mined_block is None:
             return 'Mined block validation error', 400
-        award_miner()
+        award_miner(mined_block)
         task_queue.put_task(broadcast_newly_mined_block, (node, mined_block))
         return 'Mined block successfully added.', 200
 
