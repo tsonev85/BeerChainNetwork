@@ -338,8 +338,8 @@ if __name__ == '__main__':
 
     peers_list_syncer = threading.Thread(name="Peer_Sync_Thread", target=peers_list_sync)
     peers_list_syncer.setDaemon(True)
-    # peers_list_syncer.start()
+    peers_list_syncer.start()
 
     blockchain_synchronizer = threading.Thread(name="Blockchain_Sync_Thread", target=blockchain_sync_timer)
     blockchain_synchronizer.setDaemon(True);
-    # blockchain_synchronizer.start()
+    blockchain_synchronizer.start()
