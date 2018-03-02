@@ -1,3 +1,3 @@
 from . import wallet
 from . import ui
-from . import main
+from . import wallet_main

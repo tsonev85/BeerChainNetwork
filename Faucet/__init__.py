@@ -1,2 +1,2 @@
 from . import faucet
-from . import main
+from . import faucet_main
